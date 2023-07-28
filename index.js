@@ -56,7 +56,7 @@ const productManager = new ProductManager();
     3);
   
  productManager.addProduct(
-   "Samsung Galaxy S22",
+   "Samsung Galaxy S23",
    "5G, 128 GB, 8 GB RAM, 6.1'' FHD+, Exynos 2200, 3700 mAh, Android 12",
    1359,
    "/path/to/thumbnail1.png",
