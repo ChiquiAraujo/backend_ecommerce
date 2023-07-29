@@ -36,10 +36,10 @@ addProduct (tittle, description, price, thumbnail, code, stock){
         return this.products;
     }
 
-    getProductsByID (id) {
+    getProductsByID(id) { 
         const product = this.products.find(product => product.id === id);
-        if (!product){
-            console.error("Not found");
+        if (!product) {
+            console.error("Producto no encontrado"); 
         }
         return product;
     }
@@ -63,11 +63,10 @@ const productManager = new ProductManager();
    "p2",
    5);
   
-//console.log(productManager.getProducts());
+console.log(productManager.getProducts());
   
-const productById = productManager.getProductById(4);
+const productById = productManager.getProductsByID(4); // Corrección del nombre de la función
 console.log(productById);
 
-const nonexistentProduct = productManager.getProductById(2);
-console.log(nonexistentProduct);
-  
+const nonexistentProduct = productManager.getProductsByID(2); // Corrección del nombre de la función
+console.log(nonexistentProduct);  
