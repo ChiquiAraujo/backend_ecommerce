@@ -65,8 +65,8 @@ const productManager = new ProductManager();
   
 console.log(productManager.getProducts());
   
-const productById = productManager.getProductsByID(4); // Corrección del nombre de la función
+const productById = productManager.getProductsByID(4); 
 console.log(productById);
 
-const nonexistentProduct = productManager.getProductsByID(2); // Corrección del nombre de la función
+const nonexistentProduct = productManager.getProductsByID(2); 
 console.log(nonexistentProduct);  
