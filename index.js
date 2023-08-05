@@ -80,14 +80,6 @@ productManager.addProduct(
 
 // Obtenemos la lista completa de productos y la mostramos en la consola.
 console.log(productManager.getProducts());
-<<<<<<< HEAD
-  
-const productById = productManager.getProductsByID(4); 
-console.log(productById);
-
-const nonexistentProduct = productManager.getProductsByID(2); 
-console.log(nonexistentProduct);  
-=======
 
 // Buscamos un producto por su ID (4) y lo mostramos en la consola.
 const productById = productManager.getProductsByID(4);
@@ -96,4 +88,3 @@ console.log(productById);
 // Intentamos buscar un producto con un ID inexistente (2) y mostramos el resultado en la consola.
 const nonexistentProduct = productManager.getProductsByID(2);
 console.log(nonexistentProduct);
->>>>>>> 5b24680198af56c034c349bbf5fa65d06a364dd1
