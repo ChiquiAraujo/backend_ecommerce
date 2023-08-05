@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "title": "iPhone 14",
+    "description": "128 GB, 5G, 6.7', Pantalla Super Retina XDR, Chip A16 Bionic, iOS",
+    "price": 1599,
+    "thumbnail": "/path/to/thumbnail1.png",
+    "code": "p1",
+    "stock": 3
+  },
+  {
+    "id": 2,
+    "title": "Samsung Galaxy S22",
+    "description": "5G, 128 GB, 8 GB RAM, 6.1'' FHD+, Exynos 2200, 3700 mAh, Android 12",
+    "price": 1359,
+    "thumbnail": "/path/to/thumbnail1.png",
+    "code": "p2",
+    "stock": 5
+  },
+  {
+    "id": 3,
+    "title": "Xiaomi 12T Pro",
+    "description": "256 GB, 12 GB, 6.67'', QHD, Snapdragon 8+ Gen 1, 5000 mAh, Android",
+    "price": 849,
+    "thumbnail": "/path/to/thumbnail1.png",
+    "code": "p3",
+    "stock": 4
+  }
+]
