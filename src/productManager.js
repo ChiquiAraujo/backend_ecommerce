@@ -2,7 +2,7 @@
 import fs from 'fs';
 
 // Definimos la clase "ProductManager" que gestionará un conjunto de productos.
-class ProductManager {
+export class ProductManager {
   constructor(path) {
     // Inicializamos las propiedades de la clase.
     // "path" representa la ruta del archivo donde se guardarán los productos en formato JSON.
@@ -124,16 +124,18 @@ class ProductManager {
   }
 }
 
+
+export const productManager = new ProductManager("./productos.json");
 // Creamos una instancia de la clase "ProductManager" para gestionar los productos y especificamos el archivo donde
 // se almacenarán los datos ("./productos.json").
-const productManager = new ProductManager("./productos.json");
+
 
 // Agregamos tres productos a la lista usando el método "addProduct".
 productManager.addProduct(
   "iPhone 14",
   "128 GB, 5G, 6.7', Pantalla Super Retina XDR, Chip A16 Bionic, iOS",
   1599,
-  "/path/to/thumbnail1.png",
+  "https://res.cloudinary.com/drsommzie/image/upload/v1669483716/samples/pilotech/products/m_iphone_14_mfhaxu.png",
   "p1",
   3
 );
@@ -142,7 +144,7 @@ productManager.addProduct(
   "Samsung Galaxy S22",
   "5G, 128 GB, 8 GB RAM, 6.1'' FHD+, Exynos 2200, 3700 mAh, Android 12",
   1359,
-  "/path/to/thumbnail1.png",
+  "https://res.cloudinary.com/drsommzie/image/upload/v1669483715/samples/pilotech/products/m_galaxy_s22_gw6wwm.png",
   "p2",
   5
 );
@@ -151,7 +153,7 @@ productManager.addProduct(
   "Xiaomi 12T Pro",
   "256 GB, 12 GB, 6.67'', QHD, Snapdragon 8+ Gen 1, 5000 mAh, Android",
   849,
-  "/path/to/thumbnail1.png",
+  "https://res.cloudinary.com/drsommzie/image/upload/v1669483717/samples/pilotech/products/m_xiaomi12t_papom6.png",
   "p3",
   4
 );
