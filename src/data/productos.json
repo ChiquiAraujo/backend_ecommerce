@@ -15,7 +15,7 @@
     "price": 1359,
     "thumbnail": "https://res.cloudinary.com/drsommzie/image/upload/v1669483715/samples/pilotech/products/m_galaxy_s22_gw6wwm.png",
     "code": "p2",
-    "stock": 5
+    "stock": 15
   },
   {
     "id": 3,
@@ -25,5 +25,23 @@
     "thumbnail": "https://res.cloudinary.com/drsommzie/image/upload/v1669483717/samples/pilotech/products/m_xiaomi12t_papom6.png",
     "code": "p3",
     "stock": 4
+  },
+  {
+    "id": 4,
+    "title": "iPhone 13 mini",
+    "description": "128 GB, 5G, 6.1', OLED Super Retina XDR, Chip A15 Bionic, iOS",
+    "price": 879,
+    "thumbnail": "https://res.cloudinary.com/drsommzie/image/upload/v1669483715/samples/pilotech/products/m_iphone-13_min1tg.png",
+    "code": "p4",
+    "stock": 45
+  },
+  {
+    "id": 5,
+    "title": "Xiaomi 12T Plus",
+    "description": "256 GB, 12 GB, 6.67'', QHD, Snapdragon 8+ Gen 1, 5000 mAh, Android",
+    "price": 849,
+    "thumbnail": "https://res.cloudinary.com/drsommzie/image/upload/v1669483717/samples/pilotech/products/m_xiaomi12t_papom6.png",
+    "code": "p5",
+    "stock": 11
   }
 ]

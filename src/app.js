@@ -1,47 +1,33 @@
 import express from "express";
-import { ProductManager } from "./productManager.js";
+import cartsRouter from './routes/carts.routes.js'; // Importa el router de carritos
+import productsRouter from './routes/products.routes.js'; // Importa el router de productos
 
 const PORT = 4000;
 const app = express();
 
-// Instancia de la clase ProductManager
-const productManager = new ProductManager("./productos.json");
+app.use(express.json());
 
+// Middleware para registrar las solicitudes
+app.use((req, res, next) => {
+    const date = new Date();
+    console.log(`[${date.toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
+
+// Usamos los routers importados con el prefijo /api para manejar las rutas relacionadas con carritos y productos
+app.use('/api/carts', cartsRouter);
+app.use('/api/products', productsRouter);
+
+// Esta ruta sigue siendo válida ya que es una simple respuesta para el path raíz del servidor
 app.get('/', (req, res) => {
     res.send("Hola Server");
 });
 
-app.get('/products', async (req, res) => {
-    try {
-        const { limit } = req.query;
-        let products = productManager.getProducts();
-
-        // Si se recibe un límite, se devuelven solo los productos solicitados
-        if (limit) {
-            products = products.slice(0, parseInt(limit));
-        }
-
-        res.send({ products });
-    } catch (error) {
-        res.status(500).send({ error: 'Error al obtener los productos.' });
-    }
+// Middleware para manejo de errores 
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('¡Algo salió mal!');
 });
-
-app.get('/products/:pid', async (req, res) => {
-    try {
-        const { pid } = req.params;
-        const product = productManager.getProductById(parseInt(pid));
-
-        if (!product) {
-            return res.status(404).send({ error: `No se encontró el producto con id ${pid}` });
-        }
-
-        res.send({ product });
-    } catch (error) {
-        res.status(500).send({ error: 'Error al obtener el producto.' });
-    }
-});
-
 // Inicializa el servidor
 app.listen(PORT, () => {
     console.log(`Servidor en el puerto ${PORT}`);

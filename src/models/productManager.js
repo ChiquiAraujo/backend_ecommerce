@@ -16,11 +16,16 @@ export class ProductManager {
       this.products = JSON.parse(data);
       this.nextId = this.getNextId();
     } catch (error) {
-      console.error(`Error al leer el archivo ${this.path}: ${error}`);
+      if (error.code === 'ENOENT') {
+        console.log(`Archivo ${this.path} no encontrado. Se creará automáticamente.`);
+        this.saveProducts();  // Crear el archivo vacío si no existe
+      } else {
+        console.error(`Error al leer el archivo ${this.path}: ${error}`);
+      }
     }
   }
 
-  // Método auxiliar para obtener el siguiente ID disponible para un nuevo producto.
+  // Método  el siguiente ID disponible para un nuevo producto.
   getNextId() {
     let maxId = 0;
     for (const product of this.products) {
@@ -30,7 +35,6 @@ export class ProductManager {
     }
     return maxId + 1;
   }
-
   // Método para guardar los productos en el archivo.
   saveProducts() {
     try {
@@ -42,20 +46,19 @@ export class ProductManager {
   }
 
   // Método "addProduct" para agregar un nuevo producto a la lista de productos.
-  addProduct(title, description, price, thumbnail, code, stock) {
+  addProduct(product) {
+    const { title, description, price, thumbnail, code, stock } = product;
     // Validar que todos los campos sean obligatorios.
-    if (!title || !description || !price || !thumbnail || !code || !stock) {
+    if (title === undefined || description === undefined || price === undefined || thumbnail === undefined || code === undefined || stock === undefined) {
       console.error("Todos los campos son obligatorios");
       return;
-    }
-
+  }
     // Validar que no se repita el campo "code".
     const productExists = this.products.some(product => product.code === code);
     if (productExists) {
       console.error(`El producto con código ${code} ya existe`);
       return;
     }
-
     // Creamos un nuevo producto con un identificador único y los datos proporcionados.
     const newProduct = {
       id: this.nextId++,
@@ -78,7 +81,6 @@ export class ProductManager {
   getProducts() {
     return this.products;
   }
-
   // Método "getProductById" para buscar un producto por su ID.
   // Retorna el producto encontrado con el ID proporcionado o muestra un mensaje de error si no se encuentra.
   getProductById(id) {
@@ -88,18 +90,17 @@ export class ProductManager {
     }
     return product;
   }
-
   // Método "updateProduct" para actualizar los datos de un producto por su ID.
   // Parámetros:
   // - id: El identificador único del producto que se quiere actualizar.
   // - updateData: Un objeto que contiene los campos y sus nuevos valores a actualizar.
   updateProduct(id, updateData) {
-    const productIndex = this.products.findIndex(product => product.id === id);
+    const numericId = Number(id);
+    const productIndex = this.products.findIndex(product => product.id === numericId);
     if (productIndex === -1) {
       console.error(`No se encontró el producto con id ${id}`);
-      return;
+      return null;
     }
-
     // Actualizamos los campos del producto con los nuevos valores proporcionados.
     const updatedProduct = { ...this.products[productIndex], ...updateData};
     this.products[productIndex] = updatedProduct;
@@ -107,6 +108,7 @@ export class ProductManager {
     // Guardamos los cambios en el archivo.
     this.saveProducts();
     console.log(`Producto con id ${id} actualizado correctamente`);
+    return updatedProduct; 
   }
 
   // Método "deleteProduct" para eliminar un producto por su ID.
@@ -114,20 +116,18 @@ export class ProductManager {
     const productIndex = this.products.findIndex(product => product.id === id);
     if (productIndex === -1) {
       console.error(`No se encontró el producto con id ${id}`);
-      return;
+      return false;
     }
-
     // Eliminamos el producto del arreglo y guardamos los cambios en el archivo.
     this.products.splice(productIndex, 1);
     this.saveProducts();
     console.log(`Producto con id ${id} eliminado correctamente`);
+    return true;
   }
 }
-
-
-export const productManager = new ProductManager("./productos.json");
 // Creamos una instancia de la clase "ProductManager" para gestionar los productos y especificamos el archivo donde
 // se almacenarán los datos ("./productos.json").
+export const productManager = new ProductManager('./src/data/productos.json');
 
 
 // Agregamos tres productos a la lista usando el método "addProduct".
@@ -159,7 +159,7 @@ productManager.addProduct(
 );
 
 // Actualizando el stock de un producto (ID 8) mediante el método "updateProduct".
-productManager.updateProduct(8, { stock: 8 });
+//productManager.updateProduct(8, { stock: 8 });
 
 // Finalmente, puedes utilizar el método "deleteProduct" para eliminar un producto por su ID (e.g., productManager.deleteProduct(3)).
 // Como este método puede tener consecuencias, lo dejamos comentado para evitar la eliminación accidental de datos.
