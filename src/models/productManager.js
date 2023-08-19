@@ -124,10 +124,9 @@ export class ProductManager {
   }
 }
 
-
-export const productManager = new ProductManager("./src/productos.json");
+export const productManager = new ProductManager("./productos.json");
 // Creamos una instancia de la clase "ProductManager" para gestionar los productos y especificamos el archivo donde
-// se almacenarán los datos ("./src/productos.json").
+// se almacenarán los datos ("./productos.json").
 
 
 // Agregamos tres productos a la lista usando el método "addProduct".
