@@ -1,4 +1,0 @@
-package.json
-    "dev": "nodemon index.js"
-    en la terminal escribo npm runn dev, y se queda abierto el server, no es necesario ejecutar todo el rato 
-    node index.js, para cortar la ejecusión lo hacemos con ctrl+c
