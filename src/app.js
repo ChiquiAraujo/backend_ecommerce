@@ -1,6 +1,7 @@
 import express from "express";
 import cartsRouter from './routes/carts.routes.js'; 
 import productsRouter from './routes/products.routes.js';
+import { productManager } from './models/productManager.js';
 import { ExpressHandlebars } from "express-handlebars";
 import { fileURLToPath } from 'url';
 import { Server } from 'socket.io';
@@ -31,21 +32,19 @@ app.set('views', path.resolve('./src/views')); // Ruta de las vistas, resuelve r
 
 //Server de Socket.io
 const io = new Server(serverExpress); 
-
 const prods = [];
 
-io.on('connection', (socket)=> {
+io.on('connection', (socket) => {
     console.log("Servidor Socket.io conectado");
-    socket.on('mensajeConexion', (info) =>{
-        console.log(info);
-    })
+    
+    socket.on('nuevoProducto', (nuevoProd) => {
+        productManager.addProduct(nuevoProd);
+    });
 
-    socket.on('nuevoProducto', (nuevoProd) =>{
-        prods.push(nuevoProd);
-        console.log(prods);
-        socket.emit('prods', prods);
-    })
-
+    socket.on('getProds', () => {
+        const productos = productManager.getProducts();
+        socket.emit('prods', productos);
+    });
 });
 
 // Usamos los routers importados con el prefijo /api para manejar las rutas relacionadas con carritos y productos
@@ -58,7 +57,7 @@ app.use('/static', express.static(path.join(__dirname, 'public')));
 //Pendiente editar para el desafío
 app.get('/static', (req, res) => {
     res.render('realTimeProducts', {
-        //css: 'products.css',
+        css: 'products.css',
         title: 'Productos',
         js: 'realTimeProducts.js'
     });
