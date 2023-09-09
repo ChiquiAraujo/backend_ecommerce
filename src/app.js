@@ -6,16 +6,33 @@ import { ExpressHandlebars } from "express-handlebars";
 import { fileURLToPath } from 'url';
 import { Server } from 'socket.io';
 import path from 'path';
+import userRouter from "./routes/user.routes.js";
+import mongoose from 'mongoose'
+import { userModel } from "./models/user.modeles.js";
+
 
 const PORT = 4000;
 const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const hbs = new ExpressHandlebars();
+
 // Inicializa el servidor
 const serverExpress = app.listen(PORT, () => {  
     console.log(`Servidor en el puerto ${PORT}`)
     });
 
+//Conexión con la BBDD
+mongoose.connect('mongodb+srv://chiqui:coder@cluster0.w9iadud.mongodb.net/?retryWrites=true&w=majority')
+.then(async () => {
+    console.log('BBDD is connected')
+
+    await userModel.ensureIndexes();
+    console.log('Indices asegurados');
+})
+.catch((error) => {
+    console.log('Error connecting to DDBB');
+    console.error(error);
+})
 
 // Middleware para registrar las solicitudes
 app.use(express.json());
@@ -50,8 +67,8 @@ io.on('connection', (socket) => {
 // Usamos los routers importados con el prefijo /api para manejar las rutas relacionadas con carritos y productos
 app.use('/api/carts', cartsRouter);
 app.use('/api/products', productsRouter);
+app.use('/api/users', userRouter); //BBDD
 app.use('/static', express.static(path.join(__dirname, 'public')));
-
 
 // Esta ruta sigue siendo válida ya que es una simple respuesta para el path raíz del servidor
 //Pendiente editar para el desafío
@@ -62,10 +79,8 @@ app.get('/static', (req, res) => {
         js: 'realTimeProducts.js'
     });
 });
-
 // Middleware para manejo de errores 
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).send('¡Algo salió mal!');
 });
-
