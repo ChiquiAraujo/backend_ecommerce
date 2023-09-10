@@ -1,7 +1,7 @@
 import express from "express";
 import cartsRouter from './routes/carts.routes.js'; 
 import productsRouter from './routes/products.routes.js';
-import { productManager } from './models/productManager.js';
+import { productModel } from './models/products.models.js';
 import { ExpressHandlebars } from "express-handlebars";
 import { fileURLToPath } from 'url';
 import { Server } from 'socket.io';
@@ -9,12 +9,21 @@ import path from 'path';
 import userRouter from "./routes/user.routes.js";
 import mongoose from 'mongoose'
 import { userModel } from "./models/user.modeles.js";
-
+import productRouter from "./routes/product.routes.js";
+import Message from './models/messages.models.js'; 
 
 const PORT = 4000;
 const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const hbs = new ExpressHandlebars();
+
+// Middleware para registrar las solicitudes
+app.use(express.json());
+app.use((req, res, next) => {
+    const date = new Date();
+    console.log(`[${date.toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
 
 // Inicializa el servidor
 const serverExpress = app.listen(PORT, () => {  
@@ -25,7 +34,6 @@ const serverExpress = app.listen(PORT, () => {
 mongoose.connect('mongodb+srv://chiqui:coder@cluster0.w9iadud.mongodb.net/?retryWrites=true&w=majority')
 .then(async () => {
     console.log('BBDD is connected')
-
     await userModel.ensureIndexes();
     console.log('Indices asegurados');
 })
@@ -34,14 +42,6 @@ mongoose.connect('mongodb+srv://chiqui:coder@cluster0.w9iadud.mongodb.net/?retry
     console.error(error);
 })
 
-// Middleware para registrar las solicitudes
-app.use(express.json());
-app.use((req, res, next) => {
-    const date = new Date();
-    console.log(`[${date.toISOString()}] ${req.method} ${req.url}`);
-    next();
-});
-
 // Defino el motor de plantillas Handlebars
 app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');  //Settimg de la app Handlebars
@@ -49,25 +49,50 @@ app.set('views', path.resolve('./src/views')); // Ruta de las vistas, resuelve r
 
 //Server de Socket.io
 const io = new Server(serverExpress); 
+
 const prods = [];
 
 io.on('connection', (socket) => {
     console.log("Servidor Socket.io conectado");
     
-    socket.on('nuevoProducto', (nuevoProd) => {
-        productManager.addProduct(nuevoProd);
+    socket.on('nuevoProducto', async (nuevoProd) => {
+        try {
+            await productModel.create(nuevoProd);
+        } catch (error) {
+            console.error("Error al agregar producto:", error);
+        }
+    });
+    
+    socket.on('getProds', async () => {
+        try {
+            const productos = await productModel.find();
+            socket.emit('prods', productos);
+        } catch (error) {
+            console.error("Error al obtener productos:", error);
+        }
     });
 
-    socket.on('getProds', () => {
-        const productos = productManager.getProducts();
-        socket.emit('prods', productos);
+    socket.on('chat:message', async (data) => {
+        console.log("Datos recibidos:", data)
+        try {
+            const newMessage = new Message({
+                email: data.email,
+                message: data.message        
+            });
+            await newMessage.save();
+            io.emit('chatMessage', data);
+        } catch (error) {
+            console.error("Error saving message:", error);
+        }
     });
+
 });
 
 // Usamos los routers importados con el prefijo /api para manejar las rutas relacionadas con carritos y productos
 app.use('/api/carts', cartsRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/users', userRouter); //BBDD
+app.use('/api/product', productRouter);
 app.use('/static', express.static(path.join(__dirname, 'public')));
 
 // Esta ruta sigue siendo válida ya que es una simple respuesta para el path raíz del servidor
@@ -83,4 +108,17 @@ app.get('/static', (req, res) => {
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).send('¡Algo salió mal!');
+});
+
+//Chat
+app.get('/api/messages', async (req, res) => {
+    try {
+        const messages = await Message.find().limit(50);  // Obtener los últimos 50 mensajes
+        res.json(messages);
+    } catch (error) {
+        res.status(500).send('Error fetching messages');
+    }
+});
+app.get('/chat', (req, res) => {
+    res.render('chat');
 });
