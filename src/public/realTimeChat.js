@@ -19,7 +19,6 @@ chatForm.addEventListener('submit', (e) => {
     });
     messageInput.value = '';
 });
-
 socket.on('chatMessage', (data) => {
     const messageElement = document.createElement('div');
     messageElement.innerHTML = `<b>${data.user}:</b> ${data.message}`;
