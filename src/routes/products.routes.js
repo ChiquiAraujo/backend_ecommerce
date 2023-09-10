@@ -1,5 +1,5 @@
 import express from 'express';
-import { productManager } from '../models/productManager.js';
+//import { productManager } from '../models/productManager.js';
 import { v4 as uuidv4 } from 'uuid';
 
 const productsRouter = express.Router();

@@ -15,12 +15,6 @@ botonProds.addEventListener('click', () => {
     socket.emit('getProds');  // Solicitamos al servidor la lista de productos
 });
 
-//Obtener la lista de productos
-const botonProductos = document.getElementById('botonProductos');
-botonProductos.addEventListener('click', () => {
-    socket.emit('getProds');
-});
-
 socket.on('prods', (productos) => {
     // Limpiamos el contenedor de productos para no repetir la información
     productContainer.innerHTML = "";
@@ -40,4 +34,3 @@ socket.on('prods', (productos) => {
     // Añadimos el contenedor de productos al body del documento
     document.body.appendChild(productContainer);
 });
-
