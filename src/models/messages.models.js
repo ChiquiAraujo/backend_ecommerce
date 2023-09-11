@@ -10,10 +10,10 @@ const messageSchema = new Schema({
         type: String,
         required :true
     },
-    postTime: {
-        type: Date,
-        default: Date.now // Me devuelve la fecha actual
-    }
+    // postTime: {
+    //     type: Date,
+    //     default: Date.now // Me devuelve la fecha actual
+    // }
 });
 const Message = model('Message', messageSchema);
 export default Message;
