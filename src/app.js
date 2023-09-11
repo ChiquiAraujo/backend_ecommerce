@@ -38,7 +38,7 @@ mongoose.connect('mongodb+srv://chiqui:coder@cluster0.w9iadud.mongodb.net/?retry
     console.log('Indices asegurados');
 })
 .catch((error) => {
-    console.log('Error connecting to DDBB');
+    console.log('Error connecting to DDBB:', error.message);
     console.error(error);
 })
 
@@ -72,19 +72,21 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('chat:message', async (data) => {
-        console.log("Datos recibidos:", data)
+    socket.on('chatMessage', async (data) => {
+        console.log("Datos recibidos:", data); // Registro de datos recibidos.
         try {
             const newMessage = new Message({
                 email: data.email,
                 message: data.message        
             });
             await newMessage.save();
+            console.log("Message saved successfully"); // Registro de éxito
             io.emit('chatMessage', data);
         } catch (error) {
-            console.error("Error saving message:", error);
+            console.error("Error saving message:", error); // Registro de error
         }
     });
+    
 
 });
 
@@ -97,7 +99,7 @@ app.use('/static', express.static(path.join(__dirname, 'public')));
 
 // Esta ruta sigue siendo válida ya que es una simple respuesta para el path raíz del servidor
 //Pendiente editar para el desafío
-app.get('/static', (req, res) => {
+app.get('/produc', (req, res) => {
     res.render('realTimeProducts', {
         css: 'products.css',
         title: 'Productos',
