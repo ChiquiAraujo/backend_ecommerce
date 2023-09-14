@@ -24,6 +24,7 @@ socket.on('prods', (productos) => {
         prodDiv.innerHTML = `
             <h3>${prod.title}</h3>
             <p>Description: ${prod.description}</p>
+            <p>Category: ${prod.category}<p>
             <p>Price: ${prod.price}</p>
             <p>Code: ${prod.code}</p>
             <p>Stock: ${prod.stock}</p>
