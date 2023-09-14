@@ -28,9 +28,9 @@ productRouter.get('/:id', async(req, res)=>{
 });
 
 productRouter.post('/', async(req, res) => {
-  const { title, description, code, price, stock, thumbnail = [] } = req.body;
+  const { title, description, category, code, price, stock, thumbnail = [] } = req.body;
   try {
-    const prod = await productModel.create({ title, description, code, price, stock, thumbnail });
+    const prod = await productModel.create({ title, description, category, code, price, stock, thumbnail });
     res.status(200).send({ respuesta: 'OK', mensaje: prod });
   } catch (error) {
     if (error.code === 11000) {  // Código de error para duplicación en MongoDB
@@ -41,12 +41,11 @@ productRouter.post('/', async(req, res) => {
   }
 });
 
-
 productRouter.put('/:id', async(req, res)=>{
     const { id } = req.params;
     const {title, description, code, price, stock, thumbnail =[]} = req.body;
     try {
-        const prod = await productModel.findByIdAndUpdate(id, {title, description, code, price, stock, thumbnail})
+        const prod = await productModel.findByIdAndUpdate(id, {title, description, category, code, price, stock, thumbnail})
         if(prod){
             res.status(200).send({respuesta: 'OK', mensaje: "Producto actualizado"})
         }else{
