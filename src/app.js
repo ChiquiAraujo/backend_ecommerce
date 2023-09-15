@@ -11,6 +11,8 @@ import mongoose from 'mongoose'
 import { userModel } from "./models/user.modeles.js";
 import productRouter from "./routes/product.routes.js";
 import Message from './models/messages.models.js'; 
+import bodyParser from 'body-parser';
+import { cartModel } from "./models/carts.models.js";
 
 const PORT = 4000;
 const app = express();
@@ -34,9 +36,9 @@ const serverExpress = app.listen(PORT, () => {
 mongoose.connect('mongodb+srv://chiqui:coder@cluster0.w9iadud.mongodb.net/?retryWrites=true&w=majority')
 .then(async () => {
     console.log('BBDD is connected')
-    const resultados = await userModel.find({apellido:'Olsen'}).explain('executionStats');
+    const resultados = await cartModel.findOne({_id: '650416c697049c277246dcb5'});//indicar donde existe la ref.
     await userModel.ensureIndexes(); 
-    //console.log(resultados);
+    console.log(JSON.stringify(resultados));
     
 })
 .catch((error) => {
@@ -48,6 +50,9 @@ mongoose.connect('mongodb+srv://chiqui:coder@cluster0.w9iadud.mongodb.net/?retry
 app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');  //Settimg de la app Handlebars
 app.set('views', path.resolve('./src/views')); // Ruta de las vistas, resuelve rutas relativas
+
+app.use(bodyParser.json());
+
 
 //Server de Socket.io
 const io = new Server(serverExpress); 
@@ -91,11 +96,9 @@ io.on('connection', (socket) => {
 });
 
 // Usamos los routers importados con el prefijo /api para manejar las rutas relacionadas con carritos y productos
-//app.use('/api/carts', cartsRouter);
-app.use('/api/products', productsRouter);
 app.use('/api/users', userRouter); //BBDD
-app.use('/api/product', productRouter);
-app.use('/carts', cartRouter);
+app.use('/api/products', productRouter);
+app.use('/api/carts', cartRouter);
 app.use('/static', express.static(path.join(__dirname, 'public')));
 
 // Esta ruta sigue siendo válida ya que es una simple respuesta para el path raíz del servidor
