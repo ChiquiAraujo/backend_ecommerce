@@ -13,6 +13,8 @@ import productRouter from "./routes/product.routes.js";
 import Message from './models/messages.models.js'; 
 import bodyParser from 'body-parser';
 import { cartModel } from "./models/carts.models.js";
+import { log } from "console";
+
 
 const PORT = 4000;
 const app = express();
@@ -38,7 +40,12 @@ mongoose.connect('mongodb+srv://chiqui:coder@cluster0.w9iadud.mongodb.net/?retry
     console.log('BBDD is connected')
     const resultados = await cartModel.findOne({_id: '650416c697049c277246dcb5'});//indicar donde existe la ref.
     await userModel.ensureIndexes(); 
-    console.log(JSON.stringify(resultados));
+    //console.log(JSON.stringify(resultados));
+    //Paginación
+    const resultado = await userModel.paginate({edad:38}, {limit: 20, page: 2, sort: {dad:'asc'}});
+    //console.log(resultado);
+    const resultadoProductos = await productModel.paginate({}, { limit: 10, page: 1 });
+    console.log(resultadoProductos);
     
 })
 .catch((error) => {

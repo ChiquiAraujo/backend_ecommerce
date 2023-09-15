@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import paginate from 'mongoose-paginate-v2'
+
 const { Schema, model } = mongoose;
 
 
@@ -26,4 +28,5 @@ const userSchema = new Schema({
      }
 });
 userSchema.index({ email: 1 }, { unique: true });
+userSchema.plugin(paginate)
 export const userModel = model('users', userSchema)

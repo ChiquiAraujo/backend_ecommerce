@@ -4,13 +4,17 @@ import { productModel } from '../models/products.models.js';
 const productRouter = Router()
 
 productRouter.get('/', async(req, res)=>{
-    const { limit } = req.query;
-    try {
-        const prod = await productModel.find().limit(limit);
-        res.status(200).send({respuesta: 'OK', mensaje: prod})
-      } catch (error) {
-        res.status(400).send({respuesta:'ERROR al consultar productos', mensaje: error});
-      }
+  const { page = 1, limit = 10 } = req.query;
+  try {
+      const options = {
+          page: parseInt(page, 10),
+          limit: parseInt(limit, 10)
+      };
+      const products = await productModel.paginate({}, options);
+      res.status(200).send({respuesta: 'OK', mensaje: products});
+  } catch (error) {
+      res.status(400).send({respuesta:'ERROR al consultar productos', mensaje: error});
+  }
 });
 
 productRouter.get('/:id', async(req, res)=>{
