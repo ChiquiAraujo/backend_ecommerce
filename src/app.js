@@ -1,5 +1,5 @@
 import express from "express";
-import cartsRouter from './routes/carts.routes.js'; 
+import cartRouter from './routes/cart.routes.js';
 import productsRouter from './routes/products.routes.js';
 import { productModel } from './models/products.models.js';
 import { ExpressHandlebars } from "express-handlebars";
@@ -34,8 +34,10 @@ const serverExpress = app.listen(PORT, () => {
 mongoose.connect('mongodb+srv://chiqui:coder@cluster0.w9iadud.mongodb.net/?retryWrites=true&w=majority')
 .then(async () => {
     console.log('BBDD is connected')
-    await userModel.ensureIndexes();
-    console.log('Indices asegurados');
+    const resultados = await userModel.find({apellido:'Olsen'}).explain('executionStats');
+    await userModel.ensureIndexes(); 
+    //console.log(resultados);
+    
 })
 .catch((error) => {
     console.log('Error connecting to DDBB:', error.message);
@@ -86,15 +88,14 @@ io.on('connection', (socket) => {
             console.error("Error saving message:", error); // Registro de error
         }
     });
-    
-
 });
 
 // Usamos los routers importados con el prefijo /api para manejar las rutas relacionadas con carritos y productos
-app.use('/api/carts', cartsRouter);
+//app.use('/api/carts', cartsRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/users', userRouter); //BBDD
 app.use('/api/product', productRouter);
+app.use('/carts', cartRouter);
 app.use('/static', express.static(path.join(__dirname, 'public')));
 
 // Esta ruta sigue siendo válida ya que es una simple respuesta para el path raíz del servidor

@@ -9,7 +9,8 @@ const userSchema = new Schema({
     },
     apellido:{
         type: String,
-        required: true
+        required: true,
+        index: true
      },
     edad: {
         type: Number,
@@ -25,5 +26,4 @@ const userSchema = new Schema({
      }
 });
 userSchema.index({ email: 1 }, { unique: true });
-//Parámerto 1: Nombre Colección / Parámetro 2: Schema
 export const userModel = model('users', userSchema)

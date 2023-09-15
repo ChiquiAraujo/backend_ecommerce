@@ -1,6 +1,8 @@
-import { Schema, model } from "mongoose";
+import mongoose from "mongoose";
+const { Schema, model } = mongoose;
 
-const userSchema = new Schema({
+
+const cartSchema = new Schema({
     products: {
         type: [
             {
@@ -15,7 +17,9 @@ const userSchema = new Schema({
                 }
             }
         ],
-        default: []
+        default: function(){
+            return[];
+        } 
     }
 });
 export const cartModel = model('carts', cartSchema);
