@@ -1,6 +1,7 @@
+//ESte es el antiguo 
 import express from 'express';
 import { CartManager } from '../models/cartManager.js';
-
+//
 // Router de Express para manejar rutas del carrito
 const router = express.Router(); 
 // Instancia del manejador de carritos

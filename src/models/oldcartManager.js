@@ -47,7 +47,6 @@ export class CartManager {
   }
 
 
-
   // Guarda la lista actual de carrito en el archivo
   saveCarts() {
     try {
