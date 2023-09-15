@@ -4,6 +4,16 @@ import { productModel } from "../models/products.models.js";
 
 const cartRouter = Router();
 
+cartRouter.get('/', async (req, res) => {
+    try {
+        const carts = await cartModel.find();
+        res.status(200).json(carts);
+    } catch (error) {
+        res.status(500).send({ respuesta: 'ERROR al obtener los carritos', mensaje: error });
+    }
+});
+
+
 cartRouter.get('/:id', async(req, res)=>{
     const { id } = req.params;
     try {
@@ -27,33 +37,32 @@ cartRouter.post('/', async(req, res) => {
       }
   });
   
-cartRouter.put('/:cid/products/:pid', async(req, res) => {
+  cartRouter.put('/:cid/products/:pid', async(req, res) => {
     const { cid, pid } = req.params; 
     const { quantity } = req.body;
-    
+    console.log(req.body)
     try {
         const cart = await cartModel.findById(cid);
         if(cart){
             const prod = await productModel.findById(pid)
-            //busco en la BBDD
             if(prod){
                 const indice = cart.products.findIndex(prod => prod.id_prod.toString() === pid)
-                if (indice != -1){ //si existe en el carrito, se modifica la cantidad
+                if (indice != -1){
                     cart.products[indice].quantity = quantity;
                 }else{
-                    cart.products.push({id_prod: pid, quantity: quantity}) //si no existe se agrega al carrito
+                    cart.products.push({id_prod: pid, quantity: quantity})
                 }
+                await cart.save(); 
                 res.status(200).send({ respuesta: 'OK', mensaje: cart })               
             }else{            
-                res.status(400).send({ respuesta: 'Error al agregar producto carrito', mensaje: 'Product Not found' });
+                res.status(400).send({ respuesta: 'Error al agregar producto al carrito', mensaje: 'Producto no encontrado' });
             }
-
         }else{
-            res.status(400).send({ respuesta: 'Error al agregar producto carrito', mensaje: 'Cart Not found' });
+            res.status(400).send({ respuesta: 'Error al agregar producto al carrito', mensaje: 'Carrito no encontrado' });
         }
-
     } catch (error) {
-        res.status(400).send({ respuesta: 'Error al agregar producto carrito', mensaje: 'Not found' });
+        // Manejo de errores mejorado
+        res.status(400).send({ respuesta: 'Error al agregar producto al carrito', mensaje: error.message });
     }
 });
 
