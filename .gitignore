@@ -1,5 +1,10 @@
 node_modules/
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 notes.txt/
 >>>>>>> 6f5a2d772095003c078a170608a5ef9a5c46bcb5
+=======
+notes.txt/
+.env
+>>>>>>> development

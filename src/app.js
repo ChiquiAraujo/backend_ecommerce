@@ -1,3 +1,4 @@
+import 'dotenv/config.js'
 import express from "express";
 import cartRouter from './routes/cart.routes.js';
 import productsRouter from './routes/products.routes.js';
@@ -13,8 +14,6 @@ import productRouter from "./routes/product.routes.js";
 import Message from './models/messages.models.js'; 
 import bodyParser from 'body-parser';
 import { cartModel } from "./models/carts.models.js";
-import { log } from "console";
-
 
 const PORT = 4000;
 const app = express();
@@ -35,7 +34,7 @@ const serverExpress = app.listen(PORT, () => {
     });
 
 //Conexión con la BBDD
-mongoose.connect('mongodb+srv://chiqui:coder@cluster0.w9iadud.mongodb.net/?retryWrites=true&w=majority')
+mongoose.connect(process.env.MONGO_URL)
 .then(async () => {
     console.log('BBDD is connected')
     const resultados = await cartModel.findOne({_id: '650416c697049c277246dcb5'});//indicar donde existe la ref.
