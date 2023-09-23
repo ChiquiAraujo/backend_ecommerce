@@ -14,6 +14,8 @@ import productRouter from "./routes/product.routes.js";
 import Message from './models/messages.models.js'; 
 import bodyParser from 'body-parser';
 import { cartModel } from "./models/carts.models.js";
+import cookieParser from 'cookie-parser';
+import session from 'express-session';
 
 const PORT = 4000;
 const app = express();
@@ -22,6 +24,7 @@ const hbs = new ExpressHandlebars();
 
 // Middleware para registrar las solicitudes
 app.use(express.json());
+app.use(cookieParser(process.env.SIGNED_COOKIE));//la cookie esta firmanda
 app.use((req, res, next) => {
     const date = new Date();
     console.log(`[${date.toISOString()}] ${req.method} ${req.url}`);
@@ -32,7 +35,6 @@ app.use((req, res, next) => {
 const serverExpress = app.listen(PORT, () => {  
     console.log(`Servidor en el puerto ${PORT}`)
     });
-
 //Conexión con la BBDD
 mongoose.connect(process.env.MONGO_URL)
 .then(async () => {
@@ -44,7 +46,7 @@ mongoose.connect(process.env.MONGO_URL)
     const resultado = await userModel.paginate({edad:38}, {limit: 20, page: 2, sort: {dad:'asc'}});
     //console.log(resultado);
     const resultadoProductos = await productModel.paginate({}, { limit: 10, page: 1 });
-    console.log(resultadoProductos);
+    //console.log(resultadoProductos);
     
 })
 .catch((error) => {
@@ -58,8 +60,6 @@ app.set('view engine', 'handlebars');  //Settimg de la app Handlebars
 app.set('views', path.resolve('./src/views')); // Ruta de las vistas, resuelve rutas relativas
 
 app.use(bodyParser.json());
-
-
 //Server de Socket.io
 const io = new Server(serverExpress); 
 
@@ -100,12 +100,20 @@ io.on('connection', (socket) => {
         }
     });
 });
-
+//Rutas
 // Usamos los routers importados con el prefijo /api para manejar las rutas relacionadas con carritos y productos
 app.use('/api/users', userRouter); //BBDD
 app.use('/api/products', productRouter);
 app.use('/api/carts', cartRouter);
 app.use('/static', express.static(path.join(__dirname, 'public')));
+//cookie
+app.get('/setCookie', (req,res)=>{
+    res.cookie('CookieCookie', 'Esto es una Cookie', {maxAge:1000000, signed: true}).send('Cookie generada')
+});
+
+app.get('/getCookie', (req,res)=>{
+    res.send(req.signedCookies)
+})
 
 // Esta ruta sigue siendo válida ya que es una simple respuesta para el path raíz del servidor
 //Pendiente editar para el desafío
