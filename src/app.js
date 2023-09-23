@@ -16,6 +16,8 @@ import bodyParser from 'body-parser';
 import { cartModel } from "./models/carts.models.js";
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
+import MongoStore from 'connect-mongo';
+import sessionRouter from './routes/session.routes.js';
 
 const PORT = 4000;
 const app = express();
@@ -32,7 +34,7 @@ app.use((req, res, next) => {
 });
 app.use(session({
     store: MongoStore.create({
-        mongoUrl : process.env.MONGODB_URL,
+        mongoUrl : process.env.MONGO_URL,  
         mongoOptions: {
             useNewUrlParser: true,
             useUnifiedTopology: true
@@ -40,10 +42,9 @@ app.use(session({
         ttl: 60
     }),
     secret: process.env.SESSION_SECRET,
-    resave: true,
-    saveUninitialized: true //fuerzo a guardar la session
+    resave: false,
+    saveUninitialized: false //fuerzo a guardar la session
 }));
-
 // Inicializa el servidor
 const serverExpress = app.listen(PORT, () => {  
     console.log(`Servidor en el puerto ${PORT}`)
@@ -66,13 +67,6 @@ mongoose.connect(process.env.MONGO_URL)
     console.log('Error connecting to DDBB:', error.message);
     console.error(error);
 })
-//Verifico si el usuario es admin
-const auth = (req, res, next) => {
-    if(req.session.email == "admin@admin.com" && req.session.password == "4321"){
-        return next()//continue
-    }
-    return res.send("No tienes acceso admin")
-}
 
 // Defino el motor de plantillas Handlebars
 app.engine('handlebars', hbs.engine);
@@ -126,38 +120,10 @@ app.use('/api/users', userRouter); //BBDD
 app.use('/api/products', productRouter);
 app.use('/api/carts', cartRouter);
 app.use('/static', express.static(path.join(__dirname, 'public')));
+app.use('/api/session', sessionRouter);
 //cookie
-app.get('/setCookie', (req,res)=>{
-    res.cookie('CookieCookie', 'Esto es una Cookie', {maxAge:1000000, signed: true}).send('Cookie generada')
-});
 
-app.get('/getCookie', (req,res)=>{
-    res.send(req.signedCookies)
-});
 
-app.get('/session', (req, res)=> {
-    if (req.session.counter){
-        req.session.counter++
-        res.send(`Ingreso ${req.session.counter} veces`)
-    }else{
-        req.session.counter = 1
-        res.send('Ingreso por primera vez')
-    }
-});
-
-app.get('/login', (req, res) => {
-    const {email, password} = req.body
-
-    req.session.email = email,
-    req.session.password = password,
-    console.log(req.session.email);
-    console.log(req.session.password);
-    res.send('Usuario logueado')
-})
-
-app.get('/admin', auth, (req,res) =>{
-    res.send('Hola usuario ADMIN')
-})
 // Esta ruta sigue siendo válida ya que es una simple respuesta para el path raíz del servidor
 app.get('/produc', (req, res) => {
     res.render('realTimeProducts', {
