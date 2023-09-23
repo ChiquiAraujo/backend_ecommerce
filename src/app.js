@@ -30,11 +30,25 @@ app.use((req, res, next) => {
     console.log(`[${date.toISOString()}] ${req.method} ${req.url}`);
     next();
 });
+app.use(session({
+    store: MongoStore.create({
+        mongoUrl : process.env.MONGODB_URL,
+        mongoOptions: {
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        },
+        ttl: 60
+    }),
+    secret: process.env.SESSION_SECRET,
+    resave: true,
+    saveUninitialized: true //fuerzo a guardar la session
+}));
 
 // Inicializa el servidor
 const serverExpress = app.listen(PORT, () => {  
     console.log(`Servidor en el puerto ${PORT}`)
     });
+
 //Conexión con la BBDD
 mongoose.connect(process.env.MONGO_URL)
 .then(async () => {
@@ -46,13 +60,19 @@ mongoose.connect(process.env.MONGO_URL)
     const resultado = await userModel.paginate({edad:38}, {limit: 20, page: 2, sort: {dad:'asc'}});
     //console.log(resultado);
     const resultadoProductos = await productModel.paginate({}, { limit: 10, page: 1 });
-    //console.log(resultadoProductos);
-    
+    //console.log(resultadoProductos); 
 })
 .catch((error) => {
     console.log('Error connecting to DDBB:', error.message);
     console.error(error);
 })
+//Verifico si el usuario es admin
+const auth = (req, res, next) => {
+    if(req.session.email == "admin@admin.com" && req.session.password == "4321"){
+        return next()//continue
+    }
+    return res.send("No tienes acceso admin")
+}
 
 // Defino el motor de plantillas Handlebars
 app.engine('handlebars', hbs.engine);
@@ -113,10 +133,32 @@ app.get('/setCookie', (req,res)=>{
 
 app.get('/getCookie', (req,res)=>{
     res.send(req.signedCookies)
+});
+
+app.get('/session', (req, res)=> {
+    if (req.session.counter){
+        req.session.counter++
+        res.send(`Ingreso ${req.session.counter} veces`)
+    }else{
+        req.session.counter = 1
+        res.send('Ingreso por primera vez')
+    }
+});
+
+app.get('/login', (req, res) => {
+    const {email, password} = req.body
+
+    req.session.email = email,
+    req.session.password = password,
+    console.log(req.session.email);
+    console.log(req.session.password);
+    res.send('Usuario logueado')
 })
 
+app.get('/admin', auth, (req,res) =>{
+    res.send('Hola usuario ADMIN')
+})
 // Esta ruta sigue siendo válida ya que es una simple respuesta para el path raíz del servidor
-//Pendiente editar para el desafío
 app.get('/produc', (req, res) => {
     res.render('realTimeProducts', {
         css: 'products.css',
