@@ -1,5 +1,3 @@
-{{#extend "layouts/main"}}
-{{#content "body"}}
 <form action="/api/session/login" method="post">
     <label for="email">Email:</label>
     <input type="email" name="email" required>
@@ -7,5 +5,3 @@
     <input type="password" name="password" required>
     <button type="submit">Login</button>
 </form>
-{{/content}}
-{{/extend}}

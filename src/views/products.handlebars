@@ -1,2 +1,47 @@
 <h1>Aquí está la página de Productos</h1>
 {{> counter/counter}}
+
+<style>
+  .card-container {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .card {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin: 10px;
+    padding: 10px;
+    width: 200px;
+  }
+  .card img {
+    width: 100%;
+    border-radius: 8px;
+  }
+  .card-title {
+    font-size: 1.2em;
+    margin: 10px 0;
+  }
+  .card-description {
+    margin: 10px 0;
+  }
+  .card-price {
+    color: green;
+    margin: 10px 0;
+  }
+  .card-stock {
+    color: red;
+    margin: 10px 0;
+  }
+</style>
+
+<div class="card-container">
+  {{#each products}}
+  <div class="card">
+    <img src="{{this.image}}" alt="{{this.title}}">
+    <div class="card-title">{{this.title}}</div>
+    <div class="card-description">{{this.description}}</div>
+    <div class="card-price">${{this.price}}</div>
+    <div class="card-stock">Stock: {{this.stock}}</div>
+  </div>
+  {{/each}}
+</div>

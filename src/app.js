@@ -1,7 +1,6 @@
 import 'dotenv/config.js'
 import express from "express";
 import cartRouter from './routes/cart.routes.js';
-import productsRouter from './routes/products.routes.js';
 import { productModel } from './models/products.models.js';
 import { ExpressHandlebars } from "express-handlebars";
 import { fileURLToPath } from 'url';
@@ -122,7 +121,6 @@ app.use('/api/carts', cartRouter);
 app.use('/static', express.static(path.join(__dirname, 'public')));
 app.use('/api/session', sessionRouter);
 //cookie
-
 
 // Esta ruta sigue siendo válida ya que es una simple respuesta para el path raíz del servidor
 app.get('/produc', (req, res) => {
