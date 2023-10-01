@@ -18,6 +18,12 @@ import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import sessionRouter from './routes/session.routes.js';
+import authMiddleware from './middleware/auth.middleware.js';
+import authRouter from './routes/auth.routes.js';
+import passport from 'passport';
+import { Strategy as LocalStrategy } from 'passport-local';
+import { Strategy as GitHubStrategy } from 'passport-github';
+import { userModel } from './models/user.models.js';
 
 const PORT = 4000;
 const app = express();
@@ -32,6 +38,29 @@ app.use((req, res, next) => {
     console.log(`[${date.toISOString()}] ${req.method} ${req.url}`);
     next();
 });
+
+passport.use(new GitHubStrategy({
+    clientID: process.env.GITHUB_CLIENT_ID,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    callbackURL: "http://localhost:4000/api/auth/github/callback"
+}, async (token, tokenSecret, profile, done) => {
+    try {
+        let user = await userModel.findOne({ githubId: profile.id });
+        if (!user) {
+            user = new userModel({
+                githubId: profile.id,
+                name: profile.displayName,
+            });
+            await user.save();
+        }
+        return done(null, user);
+    } catch (error) {
+        return done(error);
+    }
+}));
+
+// ... (otro código)
+
 app.use(session({
     store: MongoStore.create({
         mongoUrl : process.env.MONGO_URL,  
@@ -122,8 +151,56 @@ app.use('/api/carts', cartRouter);
 app.use('/static', express.static(path.join(__dirname, 'public')));
 app.use('/api/session', sessionRouter);
 //cookie
+//--
+app.use('/api/auth', authRouter);  // Usar las rutas de autenticación
 
+app.get('/', authMiddleware.checkJwt, async (req, res) => {
+    try {
+        const user = await userModel.findById(req.userId);
+        if (user) {
+            res.render('home', { user });  // Renderizar la página principal con los datos del usuario
+        } else {
+            res.redirect('/login');  // Redirigir a la página de login si el usuario no está autenticado
+        }
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
+passport.use(new LocalStrategy({
+    usernameField: 'email',
+    passwordField: 'password'
+}, async (email, password, done) => {
+    try {
+        const user = await userModel.findOne({ email });
+        if (!user) {
+            return done(null, false, { message: 'Incorrect username.' });
+        }
+        if (!await user.comparePassword(password)) {
+            return done(null, false, { message: 'Incorrect password.' });
+        }
+        return done(null, user);
+    } catch (error) {
+        return done(error);
+    }
+}));
 
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await userModel.findById(id);
+        done(null, user);
+    } catch (error) {
+        done(error, null);
+    }
+});
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+//--
 // Esta ruta sigue siendo válida ya que es una simple respuesta para el path raíz del servidor
 app.get('/produc', (req, res) => {
     res.render('realTimeProducts', {
