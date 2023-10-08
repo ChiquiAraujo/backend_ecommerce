@@ -5,16 +5,16 @@ const { Schema, model } = mongoose;
 
 
 const userSchema = new Schema({
-    nombre:{
+    first_name:{
        type: String,
        required: true
     },
-    apellido:{
+    last_name:{
         type: String,
         required: true,
         index: true
      },
-    edad: {
+    age: {
         type: Number,
         required: true
      },
@@ -25,6 +25,10 @@ const userSchema = new Schema({
     password: {
         type: String,
         required: true
+     },
+     rol:{
+        type: String,
+        default: 'user'
      }
 });
 userSchema.index({ email: 1 }, { unique: true });

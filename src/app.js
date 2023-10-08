@@ -14,6 +14,9 @@ import productRouter from "./routes/product.routes.js";
 import Message from './models/messages.models.js'; 
 import bodyParser from 'body-parser';
 import { cartModel } from "./models/carts.models.js";
+import cookieParser from 'cookie-parser';
+import session from 'express-session';
+import MongoStore from 'connect-mongo'
 
 const PORT = 4000;
 const app = express();
@@ -27,13 +30,29 @@ app.use((req, res, next) => {
     console.log(`[${date.toISOString()}] ${req.method} ${req.url}`);
     next();
 });
+    //cookie
+app.use(cookieParser(process.env.SIGNED_COOKIE)) //--
+//M de session
+app.use(session({
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGO_URL,
+        mongoOptions: {
+            useNewUrlParser: true,
+            useUnifiedTopology : true
+        },  
+        ttl: 60,
+    }),
+    secret: process.env.SESSION_SECRET,
+    resave: true,
+    saveUninitialized : true
+}))
 
 // Inicializa el servidor
 const serverExpress = app.listen(PORT, () => {  
     console.log(`Servidor en el puerto ${PORT}`)
     });
 
-//Conexión con la BBDD
+//Conexión BBDD
 mongoose.connect(process.env.MONGO_URL)
 .then(async () => {
     console.log('BBDD is connected')
@@ -44,25 +63,31 @@ mongoose.connect(process.env.MONGO_URL)
     const resultado = await userModel.paginate({edad:38}, {limit: 20, page: 2, sort: {dad:'asc'}});
     //console.log(resultado);
     const resultadoProductos = await productModel.paginate({}, { limit: 10, page: 1 });
-    console.log(resultadoProductos);
+    //console.log(resultadoProductos);
     
 })
 .catch((error) => {
     console.log('Error connecting to DDBB:', error.message);
     console.error(error);
 })
+//verifico si el usuario es admin o no
+const auth = (req, res, next) => {
+    if(req.session.email == "admin@admin.com" && req.session.password ==  "1234"){
+        return next() //Continua con la sig ejecución
+    }
+    return res.send("No tenes acceso a esta ruta")
+}
 
-// Defino el motor de plantillas Handlebars
+//Motor de plantillas Handlebars
 app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');  //Settimg de la app Handlebars
-app.set('views', path.resolve('./src/views')); // Ruta de las vistas, resuelve rutas relativas
+app.set('views', path.resolve('./src/views')); // Ruta de las vistas, 
 
 app.use(bodyParser.json());
 
 
 //Server de Socket.io
 const io = new Server(serverExpress); 
-
 const prods = [];
 
 io.on('connection', (socket) => {
@@ -101,7 +126,7 @@ io.on('connection', (socket) => {
     });
 });
 
-// Usamos los routers importados con el prefijo /api para manejar las rutas relacionadas con carritos y productos
+// Routes
 app.use('/api/users', userRouter); //BBDD
 app.use('/api/products', productRouter);
 app.use('/api/carts', cartRouter);
@@ -116,6 +141,39 @@ app.get('/produc', (req, res) => {
         js: 'realTimeProducts.js'
     });
 });
+//cookie
+app.get('/setCookie', (req, res) =>{
+    res.cookie('CookieCookie', 'Esto es una Cookie', {maxAge: 10000}).send('Cookie generada')
+})
+
+app.get('/getCookie', (req, res) =>{
+    res.send(req.signedCookies)
+})
+//cookie
+//session
+app.get('/session' , (req, res) =>{
+    if (req.session.counter) {
+        req.session.counter++;
+        res.send(`Ingreso ${req.session.counter} veces`);
+    } else {
+        req.session.counter = 1;
+        res.send('Ingreso por primera vez');
+        }
+});
+    //login
+app.get('/login', (req, res) =>{
+    const {email, password } = req.body;
+    req.session.email = email;
+    req.session. password = password;
+    console.log(req.session.email);
+    console.log(req.session. password);
+    res.send('Usuario logueado');
+});
+
+app.get('/admin', auth, (req, res)=>{
+    res.send('Eres admin')
+})
+
 // Middleware para manejo de errores 
 app.use((err, req, res, next) => {
     console.error(err.stack);
