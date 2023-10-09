@@ -17,11 +17,20 @@ import { cartModel } from "./models/carts.models.js";
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import MongoStore from 'connect-mongo'
+import sessionRouter from "./routes/session.routes.js";
+import Handlebars from 'handlebars';
+import { allowInsecurePrototypeAccess } from '@handlebars/allow-prototype-access';
 
 const PORT = 4000;
 const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const hbs = new ExpressHandlebars();
+const hbs = new ExpressHandlebars({
+    handlebars: allowInsecurePrototypeAccess(Handlebars),
+    runtimeOptions: {
+        allowProtoPropertiesByDefault: true,
+        allowProtoMethodsByDefault: true,
+    }
+});
 
 // Middleware para registrar las solicitudes
 app.use(express.json());
@@ -43,8 +52,8 @@ app.use(session({
         ttl: 60,
     }),
     secret: process.env.SESSION_SECRET,
-    resave: true,
-    saveUninitialized : true
+    resave: false,
+    saveUninitialized : false
 }))
 
 // Inicializa el servidor
@@ -84,7 +93,6 @@ app.set('view engine', 'handlebars');  //Settimg de la app Handlebars
 app.set('views', path.resolve('./src/views')); // Ruta de las vistas, 
 
 app.use(bodyParser.json());
-
 
 //Server de Socket.io
 const io = new Server(serverExpress); 
@@ -131,9 +139,9 @@ app.use('/api/users', userRouter); //BBDD
 app.use('/api/products', productRouter);
 app.use('/api/carts', cartRouter);
 app.use('/static', express.static(path.join(__dirname, 'public')));
+app.use('/api/sessions', sessionRouter );
 
 // Esta ruta sigue siendo válida ya que es una simple respuesta para el path raíz del servidor
-//Pendiente editar para el desafío
 app.get('/produc', (req, res) => {
     res.render('realTimeProducts', {
         css: 'products.css',
@@ -141,38 +149,17 @@ app.get('/produc', (req, res) => {
         js: 'realTimeProducts.js'
     });
 });
-//cookie
-app.get('/setCookie', (req, res) =>{
-    res.cookie('CookieCookie', 'Esto es una Cookie', {maxAge: 10000}).send('Cookie generada')
-})
-
-app.get('/getCookie', (req, res) =>{
-    res.send(req.signedCookies)
-})
-//cookie
-//session
-app.get('/session' , (req, res) =>{
-    if (req.session.counter) {
-        req.session.counter++;
-        res.send(`Ingreso ${req.session.counter} veces`);
-    } else {
-        req.session.counter = 1;
-        res.send('Ingreso por primera vez');
-        }
+//ruta vista productos
+app.get('/productos', async (req, res) => {
+    try {
+        const productos = await productModel.find();
+        //console.log(productos); 
+        res.render('products', { productos });
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        res.status(500).send('Internal Server Error');
+    }
 });
-    //login
-app.get('/login', (req, res) =>{
-    const {email, password } = req.body;
-    req.session.email = email;
-    req.session. password = password;
-    console.log(req.session.email);
-    console.log(req.session. password);
-    res.send('Usuario logueado');
-});
-
-app.get('/admin', auth, (req, res)=>{
-    res.send('Eres admin')
-})
 
 // Middleware para manejo de errores 
 app.use((err, req, res, next) => {

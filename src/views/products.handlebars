@@ -1,2 +1,18 @@
 <h1>Aquí está la página de Productos</h1>
+<h2>Productos disponibles</h2>
+<link rel="stylesheet" href="/static/css/products.css"> <!-- Asegúrate de que este enlace sea correcto -->
+<div id="productosContainer">
+    {{#each productos}}
+        <div class="producto">
+            <h3>{{this.title}}</h3>
+            <p>Description: {{this.description}}</p>
+            <p>Category: {{this.category}}</p>
+            <p>Price: {{this.price}}</p>
+            <p>Code: {{this.code}}</p>
+            <p>Stock: {{this.stock}}</p>
+        </div>
+    {{/each}}
+</div>
+
+
 {{> counter/counter}}
