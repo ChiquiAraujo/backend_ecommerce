@@ -27,7 +27,7 @@ const userSchema = new Schema({
      rol:{
         type: String,
         default: 'user'
-     }
+     } 
 });
 userSchema.index({ email: 1 }, { unique: true });
 userSchema.plugin(paginate)

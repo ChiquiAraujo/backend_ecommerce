@@ -25,7 +25,7 @@ const productSchema = new Schema ({
     stock: {
         type: String,
         required: true
-    },
+    }, 
     category: { 
         type: String,
         required: true,

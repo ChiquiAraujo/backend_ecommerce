@@ -10,4 +10,5 @@ export const checkJwt = (req, res, next) => {
         req.userId = decoded.id;
         next();
     });
+    
 };
