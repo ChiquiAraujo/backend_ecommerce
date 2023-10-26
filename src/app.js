@@ -55,12 +55,10 @@ app.use(session({
     resave: false,
     saveUninitialized : false
 }))
-
 // Inicializa el servidor
 const serverExpress = app.listen(PORT, () => {  
     console.log(`Servidor en el puerto ${PORT}`)
     });
-
 //Conexión BBDD
 mongoose.connect(process.env.MONGO_URL)
 .then(async () => {
@@ -73,7 +71,7 @@ mongoose.connect(process.env.MONGO_URL)
     //console.log(resultado);
     const resultadoProductos = await productModel.paginate({}, { limit: 10, page: 1 });
     //console.log(resultadoProductos);
-    
+
 })
 .catch((error) => {
     console.log('Error connecting to DDBB:', error.message);
@@ -133,7 +131,6 @@ io.on('connection', (socket) => {
         }
     });
 });
-
 // Routes
 app.use('/api/users', userRouter); //BBDD
 app.use('/api/products', productRouter);
@@ -149,17 +146,24 @@ app.get('/produc', (req, res) => {
         js: 'realTimeProducts.js'
     });
 });
-//ruta vista productos
+//vista productos
 app.get('/productos', async (req, res) => {
     try {
         const productos = await productModel.find();
-        //console.log(productos); 
         res.render('products', { productos });
     } catch (error) {
         console.error('Error fetching products:', error);
         res.status(500).send('Internal Server Error');
     }
 });
+app.get('/login', (req, res) => {
+    res.render('login');
+});
+
+app.get('/register', (req, res) => {
+    res.render('register');
+});
+
 
 // Middleware para manejo de errores 
 app.use((err, req, res, next) => {
