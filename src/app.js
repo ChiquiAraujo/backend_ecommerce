@@ -34,6 +34,7 @@ const hbs = new ExpressHandlebars({
 
 // Middleware para registrar las solicitudes
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use((req, res, next) => {
     const date = new Date();
     console.log(`[${date.toISOString()}] ${req.method} ${req.url}`);
@@ -136,7 +137,7 @@ app.use('/api/users', userRouter); //BBDD
 app.use('/api/products', productRouter);
 app.use('/api/carts', cartRouter);
 app.use('/static', express.static(path.join(__dirname, 'public')));
-app.use('/api/sessions', sessionRouter );
+app.use('/api/sessions', sessionRouter);
 
 // Esta ruta sigue siendo válida ya que es una simple respuesta para el path raíz del servidor
 app.get('/produc', (req, res) => {
