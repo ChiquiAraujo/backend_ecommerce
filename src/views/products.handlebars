@@ -1,6 +1,9 @@
 <h1>Aquí está la página de Productos</h1>
 <h2>Productos disponibles</h2>
 <link rel="stylesheet" href="/static/css/products.css"> 
+
+<button id="botonLogout">Cerrar Sesión</button> <!-- Botón de logout -->
+
 <div id="productosContainer">
     {{#each productos}}
         <div class="producto">
@@ -13,5 +16,6 @@
         </div>
     {{/each}}
 </div>
+<script src="/static/js/products.js"></script>
 
 {{> counter/counter}}
