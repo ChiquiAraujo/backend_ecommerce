@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Obtener datos del formulario
         const formData = new FormData(registerForm);
 
-        fetch("/api/users", {
+        fetch("/sessions/register", {
             method: "POST",
             body: formData,
         })

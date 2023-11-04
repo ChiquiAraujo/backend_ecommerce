@@ -4,21 +4,21 @@ import { createHash, validatePassword } from '../utils/bcrypt.js';
 import {userModel} from '../models/user.modeles.js'
 
 const LocalStrategy = local.Strategy;
-const initializazPassport = () =>{
+const initializazPassport = () => {
+
     passport.use('register', new LocalStrategy(
-        {passReqToCallback: true, usernameField: 'email'}, async (req,username, password, done) => {
+        {passReqToCallback: true, usernameField: 'email'}, async (req, username, password, done) => {
             //Registro de usuario
             const {first_name, last_name, email, age} =req.body;
 
             try{
-                const user = await userModel.findOne({email: email})
+                const user = await userModel.findOne({ email: email })
 
                 if(user){
                     //Caso error: usuario existe
                     return  done(null, false);
                 }
                 //Crear usuario
-
                 const passwordHash = createHash(password);
                 const userCreated = await userModel.create({
                     first_name: first_name,
@@ -28,7 +28,7 @@ const initializazPassport = () =>{
                     password: passwordHash
                 });
 
-                return done(null, userCreated)
+                return done(null, userCreated);
 
             } catch(error){
                 return done(error);
@@ -36,7 +36,7 @@ const initializazPassport = () =>{
         }));
         
         passport.use('login',new LocalStrategy(
-            {usernameField: 'email'}, async(username, passport, done) => {
+            {usernameField: 'email'}, async(username, password, done) => {
                 try{
                     const user = await userModel.findOne({email: username});
 
@@ -48,7 +48,8 @@ const initializazPassport = () =>{
                         return done(null, user)
                     }
 
-                    return done(null, faslse)
+                    const userForSession = { ...user.toObject(), password: undefined };  // Eliminamos la contraseña por seguridad
+                    return done(null, userForSession);  // Pasamos el usuario a la sesión sin la contraseña
 
                 } catch (error) {
                     return done(error)  
@@ -57,11 +58,17 @@ const initializazPassport = () =>{
             //inicializar la session del user
             passport.serializeUser((user, done) => {
                 done(null, user._id)
-            })
+            });
+
+            
             //Eliminar las session
-            passport.deserializeUser(async (id, done)=>{
-                const user = await userModel.findById(id)
-                done(null, user)
-            })
+            passport.deserializeUser(async (id, done) => {
+                try {
+                    const user = await userModel.findById(id).lean();  // Usamos .lean() para obtener un objeto simple
+                    done(null, user);  // El objeto de usuario se añadirá a req.user
+                } catch (error) {
+                    done(error, null);
+                }
+            });
 }
 export default initializazPassport

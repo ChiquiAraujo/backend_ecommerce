@@ -1,5 +1,5 @@
   <h1>Registro de Usuario</h1>
-    <form id="registrationForm" action="/api/users" method="POST">
+    <form id="registrationForm" action="/api/sessions/register" method="POST">
         <label for="first_name">Nombre:</label>
         <input type="text" id="first_name" name="first_name" required><br><br>
         
@@ -33,7 +33,7 @@
                 });
 
                 try {
-                    const response = await fetch("/api/users", {
+                    const response = await fetch("/api/sessions/register", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
