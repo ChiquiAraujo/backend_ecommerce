@@ -1,7 +1,6 @@
 import 'dotenv/config.js'
 import express from "express";
 import cartRouter from './routes/cart.routes.js';
-import productsRouter from './routes/products.routes.js';
 import { productModel } from './models/products.models.js';
 import { ExpressHandlebars } from "express-handlebars";
 import { fileURLToPath } from 'url';
@@ -20,6 +19,8 @@ import MongoStore from 'connect-mongo'
 import sessionRouter from "./routes/session.routes.js";
 import Handlebars from 'handlebars';
 import { allowInsecurePrototypeAccess } from '@handlebars/allow-prototype-access';
+import passport from 'passport';
+import initializePassport from './config/passport.js';
 
 const PORT = 4000;
 const app = express();
@@ -56,6 +57,11 @@ app.use(session({
     resave: false,
     saveUninitialized : false
 }))
+
+initializePassport();
+app.use(passport.initialize()); 
+app.use(passport.session());
+
 // Inicializa el servidor
 const serverExpress = app.listen(PORT, () => {  
     console.log(`Servidor en el puerto ${PORT}`)
@@ -64,14 +70,11 @@ const serverExpress = app.listen(PORT, () => {
 mongoose.connect(process.env.MONGO_URL)
 .then(async () => {
     console.log('BBDD is connected')
-    const resultados = await cartModel.findOne({_id: '650416c697049c277246dcb5'});//indicar donde existe la ref.
+    const resultados = await cartModel.findOne({_id: '650416c697049c277246dcb5'});
     await userModel.ensureIndexes(); 
-    //console.log(JSON.stringify(resultados));
     //Paginación
     const resultado = await userModel.paginate({edad:38}, {limit: 20, page: 2, sort: {dad:'asc'}});
-    //console.log(resultado);
     const resultadoProductos = await productModel.paginate({}, { limit: 10, page: 1 });
-    //console.log(resultadoProductos);
 
 })
 .catch((error) => {
