@@ -11,6 +11,7 @@ userRouter.get('/', async (req,res) => {
         res.status(400).send({respuesta:'ERROR al consultar usuario', mensaje: error});
     }
 });
+
 // Rutas de diagnóstico movidas antes de la ruta con parámetro
 // ruta únicamente para diagnóstico
 userRouter.get('/diagnose/null-emails', async (req, res) => {
@@ -50,14 +51,15 @@ userRouter.get('/:id', async (req, res) => {
     }
 });
 
-userRouter.post('/', async (req,res) => {
+userRouter.post('/', async (req, res) => {
     console.log(req.body);
-    const { first_name, last_name, age, email, password, rol } = req.body;
+    const { first_name, last_name, age, email, password } = req.body;
+    const rol = "user"; // Establece el rol como "user" por defecto
     try {
         const respuesta = await userModel.create({ first_name, last_name, age, email, password, rol });
-        res.status(200).send({respuesta: 'OK', mensaje: respuesta});        
-    } catch(error) {
-        res.status(400).send({respuesta: 'Error al crear usuario', mensaje: error});
+        res.status(200).send({ respuesta: 'OK', mensaje: respuesta });
+    } catch (error) {
+        res.status(400).send({ respuesta: 'Error al crear usuario', mensaje: error });
     }
 });
 

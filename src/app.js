@@ -16,71 +16,51 @@ import bodyParser from 'body-parser';
 import { cartModel } from "./models/carts.models.js";
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
-import MongoStore from 'connect-mongo';
-import sessionRouter from './routes/session.routes.js';
-import authMiddleware from './middleware/auth.middleware.js';
-import authRouter from './routes/auth.routes.js';
-import passport from 'passport';
-import { Strategy as LocalStrategy } from 'passport-local';
-import { Strategy as GitHubStrategy } from 'passport-github';
-import { userModel } from './models/user.models.js';
-
+import MongoStore from 'connect-mongo'
+import sessionRouter from "./routes/session.routes.js";
+import Handlebars from 'handlebars';
+import { allowInsecurePrototypeAccess } from '@handlebars/allow-prototype-access';
 
 const PORT = 4000;
 const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const hbs = new ExpressHandlebars();
+const hbs = new ExpressHandlebars({
+    handlebars: allowInsecurePrototypeAccess(Handlebars),
+    runtimeOptions: {
+        allowProtoPropertiesByDefault: true,
+        allowProtoMethodsByDefault: true,
+    }
+});
 
 // Middleware para registrar las solicitudes
 app.use(express.json());
-app.use(cookieParser(process.env.SIGNED_COOKIE));//la cookie esta firmanda
+app.use(express.urlencoded({ extended: true }));
 app.use((req, res, next) => {
     const date = new Date();
     console.log(`[${date.toISOString()}] ${req.method} ${req.url}`);
     next();
 });
-
-passport.use(new GitHubStrategy({
-    clientID: process.env.GITHUB_CLIENT_ID,
-    clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    callbackURL: "http://localhost:4000/api/auth/github/callback"
-}, async (token, tokenSecret, profile, done) => {
-    try {
-        let user = await userModel.findOne({ githubId: profile.id });
-        if (!user) {
-            user = new userModel({
-                githubId: profile.id,
-                name: profile.displayName,
-            });
-            await user.save();
-        }
-        return done(null, user);
-    } catch (error) {
-        return done(error);
-    }
-}));
-
-// ... (otro código)
-
+    //cookie
+app.use(cookieParser(process.env.SIGNED_COOKIE)) //--
+//M de session
 app.use(session({
     store: MongoStore.create({
-        mongoUrl : process.env.MONGO_URL,  
+        mongoUrl: process.env.MONGO_URL,
         mongoOptions: {
             useNewUrlParser: true,
-            useUnifiedTopology: true
-        },
-        ttl: 60
+            useUnifiedTopology : true
+        },  
+        ttl: 60,
     }),
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: false //fuerzo a guardar la session
-}));
+    saveUninitialized : false
+}))
 // Inicializa el servidor
 const serverExpress = app.listen(PORT, () => {  
     console.log(`Servidor en el puerto ${PORT}`)
     });
-
-//Conexión con la BBDD
+//Conexión BBDD
 mongoose.connect(process.env.MONGO_URL)
 .then(async () => {
     console.log('BBDD is connected')
@@ -91,22 +71,30 @@ mongoose.connect(process.env.MONGO_URL)
     const resultado = await userModel.paginate({edad:38}, {limit: 20, page: 2, sort: {dad:'asc'}});
     //console.log(resultado);
     const resultadoProductos = await productModel.paginate({}, { limit: 10, page: 1 });
-    //console.log(resultadoProductos); 
+    //console.log(resultadoProductos);
+
 })
 .catch((error) => {
     console.log('Error connecting to DDBB:', error.message);
     console.error(error);
 })
+//verifico si el usuario es admin o no
+const auth = (req, res, next) => {
+    if(req.session.email == "admin@admin.com" && req.session.password ==  "1234"){
+        return next() //Continua con la sig ejecución
+    }
+    return res.send("No tenes acceso a esta ruta")
+}
 
-// Defino el motor de plantillas Handlebars
+//Motor de plantillas Handlebars
 app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');  //Settimg de la app Handlebars
-app.set('views', path.resolve('./src/views')); // Ruta de las vistas, resuelve rutas relativas
+app.set('views', path.resolve('./src/views')); // Ruta de las vistas, 
 
 app.use(bodyParser.json());
+
 //Server de Socket.io
 const io = new Server(serverExpress); 
-
 const prods = [];
 
 io.on('connection', (socket) => {
@@ -144,64 +132,13 @@ io.on('connection', (socket) => {
         }
     });
 });
-//Rutas
-// Usamos los routers importados con el prefijo /api para manejar las rutas relacionadas con carritos y productos
+// Routes
 app.use('/api/users', userRouter); //BBDD
 app.use('/api/products', productRouter);
 app.use('/api/carts', cartRouter);
 app.use('/static', express.static(path.join(__dirname, 'public')));
-app.use('/api/session', sessionRouter);
-//cookie
-//--
-app.use('/api/auth', authRouter);  // Usar las rutas de autenticación
+app.use('/api/sessions', sessionRouter);
 
-app.get('/', authMiddleware.checkJwt, async (req, res) => {
-    try {
-        const user = await userModel.findById(req.userId);
-        if (user) {
-            res.render('home', { user });  // Renderizar la página principal con los datos del usuario
-        } else {
-            res.redirect('/login');  // Redirigir a la página de login si el usuario no está autenticado
-        }
-    } catch (error) {
-        res.status(500).send(error);
-    }
-});
-passport.use(new LocalStrategy({
-    usernameField: 'email',
-    passwordField: 'password'
-}, async (email, password, done) => {
-    try {
-        const user = await userModel.findOne({ email });
-        if (!user) {
-            return done(null, false, { message: 'Incorrect username.' });
-        }
-        if (!await user.comparePassword(password)) {
-            return done(null, false, { message: 'Incorrect password.' });
-        }
-        return done(null, user);
-    } catch (error) {
-        return done(error);
-    }
-}));
-
-passport.serializeUser((user, done) => {
-    done(null, user.id);
-});
-
-passport.deserializeUser(async (id, done) => {
-    try {
-        const user = await userModel.findById(id);
-        done(null, user);
-    } catch (error) {
-        done(error, null);
-    }
-});
-
-app.use(passport.initialize());
-app.use(passport.session());
-
-//--
 // Esta ruta sigue siendo válida ya que es una simple respuesta para el path raíz del servidor
 app.get('/produc', (req, res) => {
     res.render('realTimeProducts', {
@@ -210,6 +147,25 @@ app.get('/produc', (req, res) => {
         js: 'realTimeProducts.js'
     });
 });
+//vista productos
+app.get('/productos', async (req, res) => {
+    try {
+        const productos = await productModel.find();
+        res.render('products', { productos });
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+app.get('/login', (req, res) => {
+    res.render('login');
+});
+
+app.get('/register', (req, res) => {
+    res.render('register');
+});
+
+
 // Middleware para manejo de errores 
 app.use((err, req, res, next) => {
     console.error(err.stack);
