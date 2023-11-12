@@ -3,10 +3,10 @@ import passport from "passport";
 
 const sessionRouter = Router();
 
-sessionRouter.post('/login', passport.authenticate('login') , async (req, res) => {
+sessionRouter.post('/login', passport.authenticate('login'), async (req, res) => {
     try{
         if(!req.user){
-            return res.status(401).send({ mensaje: "Usuario Invalido"})
+            return res.status(401).send({ mensaje: "Usuario invalido" })
         }
 
         req.session.user = {
@@ -23,15 +23,24 @@ sessionRouter.post('/login', passport.authenticate('login') , async (req, res) =
     }
 });
 
-sessionRouter.post('/register', passport.authenticate('register') , async (req, res) => {
+sessionRouter.post('/register', passport.authenticate('register'), async (req, res) => {
     try{
         if(!req.user){
-            return res.status(401).send({ mensaje: "Usuario ya existente"})
+            return res.status(400).send({ mensaje: "Usuario ya existente"})
         }
-        res.status(200).send({ mensaje: 'Usuario Creado' });
+        res.status(200).send({ mensaje: 'Usuario registrado' });
     } catch (error) {
         res.status(500).send({ mensaje: `Error al registrar usuario ${error}`});
     }
+});
+//github
+sessionRouter.get('/github', passport.authenticate('github', { scope: ['user:email']}), async(req, res) => {
+    res.status(200).send({mensaje: 'Usuario Registrado'})
+});
+
+sessionRouter.get('/githubCallback', passport.authenticate('github'), async(req, res) => {
+    req.session.user = req.user;
+    res.status(200).send({mensaje: 'Usuario logueado'})
 });
 
 sessionRouter.get('/logout', (req, res) => {
@@ -49,6 +58,4 @@ sessionRouter.get('/logout', (req, res) => {
         return res.status(200).send({ resultado: 'Usuario no ha iniciado sesión previamente' });
     }
 });
-
-
 export default sessionRouter;
