@@ -21,6 +21,9 @@ import Handlebars from 'handlebars';
 import { allowInsecurePrototypeAccess } from '@handlebars/allow-prototype-access';
 import passport from 'passport';
 import initializePassport from './config/passport.js';
+import { handleErrors } from './utils/errorHandler.js';
+import { createMockProducts } from './utils/mocking.js';
+import mockingRoutes from './routes/mocking.routes.js';
 
 const PORT = 4000;
 const app = express();
@@ -61,6 +64,7 @@ app.use(session({
 initializePassport();
 app.use(passport.initialize()); 
 app.use(passport.session());
+
 
 // Inicializa el servidor
 const serverExpress = app.listen(PORT, () => {  
@@ -141,7 +145,17 @@ app.use('/api/products', productRouter);
 app.use('/api/carts', cartRouter);
 app.use('/static', express.static(path.join(__dirname, 'public')));
 app.use('/api/sessions', sessionRouter);
+app.use(handleErrors); 
+app.use('/api', mockingRoutes);
 
+app.get('/api/mockingproducts', (req, res, next) => {
+    try {
+      const mockProducts = createMockProducts();
+      res.json(mockProducts);
+    } catch (error) {
+      next(error); // Pasamos el error al middleware de manejo de errores
+    }
+  });
 // Esta ruta sigue siendo válida ya que es una simple respuesta para el path raíz del servidor
 app.get('/produc', (req, res) => {
     res.render('realTimeProducts', {
