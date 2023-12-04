@@ -3,6 +3,7 @@ import GithubStrategy from 'passport-github2';
 import passport from 'passport';
 import { createHash, validatePassword } from '../utils/bcrypt.js';
 import {userModel} from '../models/user.modeles.js';
+import logger from '../utils/logger.js'
 
 const LocalStrategy = local.Strategy;
 const initializePassport = () => {
@@ -63,9 +64,9 @@ const initializePassport = () => {
                 callbackURL: process.env.CALLBACK_URL
             }, async(accessToken, refreshToken, profile, done) => {
                 try{
-                    console.log(accessToken);
-                    console.log(refreshToken);
-                    console.log(profile._json);
+                    logger.info(`Github accessToken: ${accessToken}`);
+                    logger.info(`Github refreshToken: ${refreshToken}`);
+                    logger.info(`Github profile: ${JSON.stringify(profile._json)}`);
                     const user = await userModel.findOne({ email: profile._json.email})
                     if (user) {
                         done(null, false)
@@ -80,7 +81,8 @@ const initializePassport = () => {
                         done(null, userCreated)
                     }
                 } catch(error){
-                    done(error)
+                    logger.error(`Error in Github Strategy: ${error}`);
+                    done(error);
                 }
             }))
             //Inicializar la session del user

@@ -1,34 +1,44 @@
 import mongoose from "mongoose";
-import paginate from 'mongoose-paginate-v2'
+import paginate from 'mongoose-paginate-v2';
 
 const { Schema, model } = mongoose;
+
 const userSchema = new Schema({
-    first_name:{
+    first_name: {
        type: String,
        required: true
     },
-    last_name:{
+    last_name: {
         type: String,
         required: true,
         index: true
-     },
+    },
     age: {
         type: Number,
         required: true
-     },
+    },
     email: {
         type: String,
-        required: true
+        required: true,
+        unique: true 
     },
     password: {
         type: String,
         required: true
-     },
-     rol:{
+    },
+    rol: {
         type: String,
-        default: 'user'
-     }
+        default: 'user',
+        enum: ['user', 'admin', 'premium']
+    },
+    resetPasswordToken: {
+        type: String,
+        default: null
+    },
+    resetPasswordExpires: {
+        type: Date,
+        default: null
+    }
 });
-userSchema.index({ email: 1 }, { unique: true });
-userSchema.plugin(paginate)
-export const userModel = model('users', userSchema)
+userSchema.plugin(paginate);
+export const userModel = model('User', userSchema);

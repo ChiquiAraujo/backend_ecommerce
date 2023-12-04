@@ -23,16 +23,22 @@ const productSchema = new Schema ({
         unique: true
     },
     stock: {
-        type: String,
+        type: Number,
         required: true
     }, 
     category: { 
         type: String,
         required: true,
         index: true
+    },
+    owner: {
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'User', 
+        required: true,
+        default: 'admin'
     }
 });
 
 productSchema.plugin(mongoosePaginate);
-const productModel = mongoose.model('products', productSchema);
+const productModel = mongoose.model('Product', productSchema);
 export { productModel };

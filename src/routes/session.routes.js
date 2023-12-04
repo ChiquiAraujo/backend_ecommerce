@@ -1,7 +1,18 @@
 import { Router } from "express";
 import passport from "passport";
+import logger from '../utils/logger.js'
 
 const sessionRouter = Router();
+
+sessionRouter.get('/loggerTest', (req, res) => {
+    logger.debug('Log de nivel debug');
+    logger.info('Log de nivel info');
+    logger.warn('Log de nivel warning');
+    logger.error('Log de nivel error');
+    logger.log('fatal', 'Log de nivel fatal');
+
+    res.send('Logs generados correctamente. Revisa tus archivos de log y la consola.');
+});
 
 sessionRouter.post('/login', passport.authenticate('login'), async (req, res) => {
     try{
@@ -44,17 +55,20 @@ sessionRouter.get('/githubCallback', passport.authenticate('github'), async(req,
 });
 
 sessionRouter.get('/logout', (req, res) => {
-    if (req.session.user) {  // verificar la existencia de 'user' y no 'login'
+    if (req.session.user) {
         req.logout(function(err) {  
-            if (err) { return next(err); }
-            req.session.destroy(() => {  // Destruye la sesión completamente
-                res.clearCookie('connect.sid', { path: '/' });  // Borra la cookie de la sesión
-                console.log("Usuario deslogueado.");
+            if (err) { 
+                logger.error(`Error al desloguear usuario: ${err}`);
+                return next(err);
+            }
+            req.session.destroy(() => {
+                res.clearCookie('connect.sid', { path: '/' });
+                logger.info("Usuario deslogueado.");
                 return res.status(200).send({ resultado: 'Usuario deslogueado' });
             });
         });
     } else {
-        console.log("Ningún usuario ha iniciado sesión previamente.");
+        logger.info("Ningún usuario ha iniciado sesión previamente.");
         return res.status(200).send({ resultado: 'Usuario no ha iniciado sesión previamente' });
     }
 });

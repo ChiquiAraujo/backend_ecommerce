@@ -19,11 +19,11 @@ const sendPurchaseConfirmationEmail = async (to, items) => {
 
   try {
     await sgMail.send(msg);
-    console.log('Email enviado correctamente.');
+    logger.info('Email enviado correctamente.');
   } catch (error) {
-    console.error('Error enviando email de confirmación de compra:', error);
+    logger.error('Error enviando email de confirmación de compra:', error);
     throw new Error('Error al enviar el email de confirmación de compra.');
   }
 };
 
-module.exports = { sendPurchaseConfirmationEmail };
+module.exports = { sendPurchaseConfirmationEmail }

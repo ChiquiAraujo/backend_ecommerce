@@ -24,10 +24,11 @@ import initializePassport from './config/passport.js';
 import { handleErrors } from './utils/errorHandler.js';
 import { createMockProducts } from './utils/mocking.js';
 import mockingRoutes from './routes/mocking.routes.js';
+import logger from './utils/logger.js';
 
-const PORT = 4000;
-const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const PORT = process.env.PORT || 4000;
+const app = express();
 const hbs = new ExpressHandlebars({
     handlebars: allowInsecurePrototypeAccess(Handlebars),
     runtimeOptions: {
@@ -36,63 +37,62 @@ const hbs = new ExpressHandlebars({
     }
 });
 
-// Middleware para registrar las solicitudes
+// Configuración de middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser(process.env.SIGNED_COOKIE));
+
 app.use((req, res, next) => {
     const date = new Date();
     console.log(`[${date.toISOString()}] ${req.method} ${req.url}`);
     next();
 });
-    //cookie
-app.use(cookieParser(process.env.SIGNED_COOKIE)) //--
-//M de session
+
+// Configuración de la sesión
 app.use(session({
     store: MongoStore.create({
         mongoUrl: process.env.MONGO_URL,
         mongoOptions: {
             useNewUrlParser: true,
-            useUnifiedTopology : true
-        },  
-        ttl: 60,
+            useUnifiedTopology: true
+        },
+        ttl: 60 * 60 // 1 hora
     }),
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized : false
-}))
-
+    saveUninitialized: false
+}));
+// Inicialización de Passport
 initializePassport();
 app.use(passport.initialize()); 
 app.use(passport.session());
 
-
 // Inicializa el servidor
 const serverExpress = app.listen(PORT, () => {  
-    console.log(`Servidor en el puerto ${PORT}`)
+    logger.info(`Servidor en el puerto ${PORT}`);
     });
 //Conexión BBDD
-mongoose.connect(process.env.MONGO_URL)
+mongoose.connect(process.env.MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
 .then(async () => {
-    console.log('BBDD is connected')
+    logger.info('BBDD conectada correctamente');
     const resultados = await cartModel.findOne({_id: '650416c697049c277246dcb5'});
-    await userModel.ensureIndexes(); 
-    //Paginación
-    const resultado = await userModel.paginate({edad:38}, {limit: 20, page: 2, sort: {dad:'asc'}});
+    await userModel.ensureIndexes();
+    const resultado = await userModel.paginate({edad:38}, {limit: 20, page: 2, sort: {edad:'asc'}});
     const resultadoProductos = await productModel.paginate({}, { limit: 10, page: 1 });
-
 })
 .catch((error) => {
-    console.log('Error connecting to DDBB:', error.message);
-    console.error(error);
-})
+    logger.error('Error conectando a la BBDD:', error.message);
+});
 //verifico si el usuario es admin o no
 const auth = (req, res, next) => {
     if(req.session.email == "admin@admin.com" && req.session.password ==  "1234"){
-        return next() //Continua con la sig ejecución
+        return next() 
     }
     return res.send("No tenes acceso a esta ruta")
 }
-
 //Motor de plantillas Handlebars
 app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');  //Settimg de la app Handlebars
@@ -105,7 +105,7 @@ const io = new Server(serverExpress);
 const prods = [];
 
 io.on('connection', (socket) => {
-    console.log("Servidor Socket.io conectado");
+    logger.debug("Servidor Socket.io conectado");
     
     socket.on('nuevoProducto', async (nuevoProd) => {
         try {
@@ -113,14 +113,13 @@ io.on('connection', (socket) => {
         } catch (error) {
             console.error("Error al agregar producto:", error);
         }
-    });
-    
+    });    
     socket.on('getProds', async () => {
         try {
             const productos = await productModel.find();
             socket.emit('prods', productos);
         } catch (error) {
-            console.error("Error al obtener productos:", error);
+            logger.error("Error al agregar producto:", error);
         }
     });
 
@@ -181,14 +180,11 @@ app.get('/login', (req, res) => {
 app.get('/register', (req, res) => {
     res.render('register');
 });
-
-
 // Middleware para manejo de errores 
 app.use((err, req, res, next) => {
-    console.error(err.stack);
+    logger.error(err.stack);
     res.status(500).send('¡Algo salió mal!');
 });
-
 //Chat
 app.get('/api/messages', async (req, res) => {
     try {

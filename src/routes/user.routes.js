@@ -1,42 +1,18 @@
 import { Router } from "express";
-import { userModel } from "../models/user.modeles.js";
+import { userModel } from "../models/user.models.js";
 
 const userRouter = Router();
 
-userRouter.get('/', async (req,res) => {
-    try{
-        const users = await userModel.find()
-        res.status(200).send({respuesta: 'OK', mensaje: users});
-    }catch(error) {
-        res.status(400).send({respuesta:'ERROR al consultar usuario', mensaje: error});
-    }
-});
-
-// Rutas de diagnóstico movidas antes de la ruta con parámetro
-// ruta únicamente para diagnóstico
-userRouter.get('/diagnose/null-emails', async (req, res) => {
+// Obtener todos los usuarios
+userRouter.get('/', async (req, res) => {
     try {
-        const nullEmailUsers = await userModel.find({ email: null });
-        if (nullEmailUsers.length > 0) {
-            return res.status(200).send({ respuesta: 'Usuarios con email nulo detectados', usuarios: nullEmailUsers });
-        } else {
-            return res.status(200).send({ respuesta: 'No se detectaron usuarios con email nulo' });
-        }
+        const users = await userModel.find();
+        res.status(200).send({ respuesta: 'OK', mensaje: users });
     } catch (error) {
-        return res.status(400).send({ respuesta: 'Error al realizar diagnóstico', mensaje: error });
+        res.status(400).send({ respuesta: 'ERROR al consultar usuarios', mensaje: error });
     }
 });
-
-//Eliminar
-userRouter.delete('/diagnose/delete-null-emails', async (req, res) => {
-    try {
-        const result = await userModel.deleteMany({ email: null });
-        return res.status(200).send({ respuesta: 'Usuarios con email nulo eliminados', detalle: result });
-    } catch (error) {
-        return res.status(400).send({ respuesta: 'Error al eliminar usuarios con email nulo', mensaje: error });
-    }
-});
-
+// Obtener un usuario por ID
 userRouter.get('/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -47,36 +23,59 @@ userRouter.get('/:id', async (req, res) => {
             res.status(404).send({ respuesta: 'Error', mensaje: 'Usuario no encontrado' });
         }
     } catch (error) {
-        res.status(400).send({ respuesta: 'ERROR al consultar usuarios', mensaje: error });
+        res.status(400).send({ respuesta: 'ERROR al consultar usuario', mensaje: error });
     }
 });
 
+// Actualizar un usuario
 userRouter.put('/:id', async (req, res) => {
     const { id } = req.params;
     const { first_name, last_name, age, email, password } = req.body;
     try {
-        const user = await userModel.findByIdAndUpdate(id, { first_name, last_name, age, email, password });
+        const user = await userModel.findByIdAndUpdate(id, { first_name, last_name, age, email, password }, { new: true });
         if (user) {
-            res.status(200).send({ respuesta: 'OK', mensaje: user });
+            res.status(200).send({ respuesta: 'OK', mensaje: 'Usuario actualizado' });
         } else {
-            res.status(404).send({ respuesta: 'Error al actualizar usuario', mensaje: 'Usuario no encontrado' });
+            res.status(404).send({ respuesta: 'Error', mensaje: 'Usuario no encontrado' });
         }
     } catch (error) {
-        res.status(400).send({ respuesta: 'ERROR', mensaje: error });
+        res.status(400).send({ respuesta: 'ERROR al actualizar usuario', mensaje: error });
     }
 });
 
+// Eliminar un usuario
 userRouter.delete('/:id', async (req, res) => {
     const { id } = req.params;
     try {
         const user = await userModel.findByIdAndDelete(id);
         if (user) {
-            res.status(200).send({ respuesta: 'OK', mensaje: user });
+            res.status(200).send({ respuesta: 'OK', mensaje: 'Usuario eliminado' });
         } else {
-            res.status(404).send({ respuesta: 'Error al eliminar usuario', mensaje: 'Usuario no encontrado' });
+            res.status(404).send({ respuesta: 'Error', mensaje: 'Usuario no encontrado' });
         }
     } catch (error) {
         res.status(400).send({ respuesta: 'ERROR al eliminar usuario', mensaje: error });
+    }
+});
+
+// Cambiar el rol de un usuario
+userRouter.post('/:id/premium', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const user = await userModel.findById(id);
+
+        if (!user) {
+            return res.status(404).send({ respuesta: 'Error', mensaje: 'Usuario no encontrado' });
+        }
+
+        // Cambiar el rol del usuario
+        user.rol = user.rol === 'premium' ? 'user' : 'premium';
+        await user.save();
+
+        res.status(200).send({ respuesta: 'OK', mensaje: `Rol actualizado a ${user.rol}` });
+    } catch (error) {
+        res.status(500).send({ respuesta: 'ERROR al actualizar el rol del usuario', mensaje: error });
     }
 });
 
