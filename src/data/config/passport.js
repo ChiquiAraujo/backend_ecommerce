@@ -1,8 +1,7 @@
 import passport from 'passport';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-import User from '../models/user.models.js'; 
-
-
+import User from '../models/user.modeles.js'; 
+t 
 // Opciones de configuración
 const opts = {
   jwtFromRequest: ExtractJwt.fromExtractors([(req) => req.cookies?.jwt]),

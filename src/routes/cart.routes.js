@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { cartModel } from "../models/carts.models.js";
 import { productModel } from "../models/products.models.js";
-import { userModel } from "../models/user.models.js"; 
+import { userModel } from "../models/user.modeles.js"; 
 
 const cartRouter = Router();
 

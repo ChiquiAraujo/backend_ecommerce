@@ -1,7 +1,7 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto'; 
-import { userModel } from '../models/user.models.js';
+import { userModel } from '../models/user.modeles.js';
 import { sendPasswordResetEmail } from '../services/email.service.js';
 import { createHash } from '../utils/bcrypt.js'; // Asegúrate de tener esta función en tu archivo bcrypt.js
 

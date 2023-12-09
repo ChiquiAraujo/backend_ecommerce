@@ -1,30 +1,36 @@
-import 'dotenv/config.js'
+// Módulos de Node.js
+import 'dotenv/config.js';
 import express from "express";
-import cartRouter from './routes/cart.routes.js';
-import { productModel } from './models/products.models.js';
-import { ExpressHandlebars } from "express-handlebars";
-import { fileURLToPath } from 'url';
-import { Server } from 'socket.io';
 import path from 'path';
-import userRouter from "./routes/user.routes.js";
-import mongoose from 'mongoose'
-import { userModel } from "./models/user.modeles.js";
-import productRouter from "./routes/product.routes.js";
-import Message from './models/messages.models.js'; 
+import { fileURLToPath } from 'url';
+import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
-import { cartModel } from "./models/carts.models.js";
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
-import MongoStore from 'connect-mongo'
-import sessionRouter from "./routes/session.routes.js";
+import { Server } from 'socket.io';
+// Middleware y utilidades de terceros
+import MongoStore from 'connect-mongo';
+import { ExpressHandlebars } from "express-handlebars";
 import Handlebars from 'handlebars';
 import { allowInsecurePrototypeAccess } from '@handlebars/allow-prototype-access';
 import passport from 'passport';
+// Configuración de Passport
 import initializePassport from './config/passport.js';
+// Rutas y modelos
+import userRouter from "./routes/user.routes.js";
+import productRouter from "./routes/product.routes.js";
+import cartRouter from './routes/cart.routes.js';
+import sessionRouter from "./routes/session.routes.js";
+import mockingRoutes from './routes/mocking.routes.js';
+import { userModel } from "./models/user.modeles.js";
+import { productModel } from './models/products.models.js';
+import { cartModel } from "./models/carts.models.js";
+import Message from './models/messages.models.js'; 
+// Utilidades propias
+import logger from './utils/logger.js';
 import { handleErrors } from './utils/errorHandler.js';
 import { createMockProducts } from './utils/mocking.js';
-import mockingRoutes from './routes/mocking.routes.js';
-import logger from './utils/logger.js';
+
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 4000;
