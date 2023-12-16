@@ -42,6 +42,9 @@ const hbs = new ExpressHandlebars({
         allowProtoMethodsByDefault: true,
     }
 });
+const { swaggerUi, swaggerDocs } = require('./config/swagger');
+
+swaggerConfig.setup(app);
 
 // Configuración de middlewares
 app.use(express.json());
@@ -72,6 +75,7 @@ app.use(session({
 initializePassport();
 app.use(passport.initialize()); 
 app.use(passport.session());
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Inicializa el servidor
 const serverExpress = app.listen(PORT, () => {  

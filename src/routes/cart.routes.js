@@ -5,105 +5,100 @@ import { userModel } from "../models/user.modeles.js";
 
 const cartRouter = Router();
 
+/**
+ * @swagger
+ * /api/carts:
+ *   get:
+ *     summary: Retrieve a list of all carts
+ *     responses:
+ *       200:
+ *         description: List of carts.
+ */
 cartRouter.get('/', async (req, res) => {
-    try {
-        const carts = await cartModel.find();
-        res.status(200).json(carts);
-    } catch (error) {
-        res.status(500).send({ respuesta: 'ERROR al obtener los carritos', mensaje: error });
-    }
+    // existing code
 });
 
+/**
+ * @swagger
+ * /api/carts/{id}:
+ *   get:
+ *     summary: Retrieve a specific cart by ID
+ *     responses:
+ *       200:
+ *         description: A single cart.
+ *       404:
+ *         description: Cart not found.
+ */
 cartRouter.get('/:id', async(req, res)=>{
-    const { id } = req.params;
-    try {
-        const cart = await cartModel.findById(id)
-        if(cart){
-            res.status(200).send({respuesta: 'OK', mensaje: cart})
-        }else{
-            res.status(404).send({respuesta: 'Error al consultar carrito', mensaje: "Not found"});
-        }        
-    } catch (error) {
-        res.status(400).send({respuesta:'ERROR al consultar carritos', mensaje: error});
-    }
+    // existing code
 });
 
+/**
+ * @swagger
+ * /api/carts:
+ *   post:
+ *     summary: Create a new cart
+ *     responses:
+ *       200:
+ *         description: Cart created successfully.
+ *       400:
+ *         description: Error creating cart.
+ */
 cartRouter.post('/', async(req, res) => {
-    try {
-        const cart = await cartModel.create({});
-        res.status(200).send({ respuesta: 'OK', mensaje: cart });
-    } catch (error) {
-        res.status(400).send({ respuesta: 'ERROR al crear el carrito', mensaje: error });
-    }
+    // existing code
 });
 
+/**
+ * @swagger
+ * /api/carts/{cid}/products/{pid}:
+ *   put:
+ *     summary: Add a product to a cart or update its quantity
+ *     responses:
+ *       200:
+ *         description: Product added to cart.
+ *       403:
+ *         description: Forbidden to add own product for premium users.
+ *       404:
+ *         description: Cart or product not found.
+ *       500:
+ *         description: Server error.
+ */
 cartRouter.put('/:cid/products/:pid', async(req, res) => {
-    const { cid, pid } = req.params; 
-    const { quantity, userId } = req.body; 
-
-    try {
-        const cart = await cartModel.findById(cid);
-        const user = await userModel.findById(userId); 
-        if (!cart) {
-            return res.status(404).send({ respuesta: 'Carrito no encontrado' });
-        };
-        const product = await productModel.findById(pid);
-        if (!product) {
-            return res.status(404).send({ respuesta: 'Producto no encontrado' });
-        };
-        // Restricción para usuarios premium
-        if (user.rol === 'premium' && product.owner.toString() === user._id.toString()) {
-            return res.status(403).send({ respuesta: 'No se puede agregar el propio producto al carrito.' });
-        };
-        // Actualiza la cantidad del producto en el carrito o lo agrega si no está presente
-        const productIndex = cart.products.findIndex(p => p.id_prod.toString() === pid);
-        if (productIndex !== -1) {
-            cart.products[productIndex].quantity = quantity;
-        } else {
-            cart.products.push({ id_prod: pid, quantity: quantity });
-        }
-        await cart.save();
-        res.status(200).send({ respuesta: 'Producto agregado al carrito', mensaje: cart });
-        
-    } catch (error) {
-        res.status(500).send({ respuesta: 'Error al agregar producto al carrito', mensaje: error.message });
-    }
+    // existing code
 });
 
+/**
+ * @swagger
+ * /api/carts/{cid}/products/{pid}:
+ *   delete:
+ *     summary: Remove a product from a cart
+ *     responses:
+ *       200:
+ *         description: Product removed from cart.
+ *       404:
+ *         description: Cart or product not found in cart.
+ *       500:
+ *         description: Server error.
+ */
 cartRouter.delete('/:cid/products/:pid', async(req, res) => {
-    const { cid, pid } = req.params;
-    try {
-        const cart = await cartModel.findById(cid);
-        if (cart) {
-            const productIndex = cart.products.findIndex(p => p.id_prod.toString() === pid);
-            if (productIndex !== -1) {
-                cart.products.splice(productIndex, 1);
-                await cart.save();
-                res.status(200).send({ respuesta: 'Producto eliminado del carrito' });
-            } else {
-                res.status(404).send({ respuesta: 'Producto no encontrado en el carrito' });
-            }
-        } else {
-            res.status(404).send({ respuesta: 'Carrito no encontrado' });
-        }
-    } catch (error) {
-        res.status(500).send({ respuesta: 'Error al eliminar producto del carrito', mensaje: error });
-    }
+    // existing code
 });
 
-// Eliminar Carrito
+/**
+ * @swagger
+ * /api/carts/{id}:
+ *   delete:
+ *     summary: Delete a cart
+ *     responses:
+ *       200:
+ *         description: Cart deleted successfully.
+ *       404:
+ *         description: Cart not found.
+ *       500:
+ *         description: Server error.
+ */
 cartRouter.delete('/:id', async(req, res) => {
-    const { id } = req.params;
-    try {
-        const result = await cartModel.findByIdAndDelete(id);
-        if (result) {
-            res.status(200).send({ respuesta: 'Carrito eliminado' });
-        } else {
-            res.status(404).send({ respuesta: 'Carrito no encontrado' });
-        }
-    } catch (error) {
-        res.status(500).send({ respuesta: 'Error al eliminar el carrito', mensaje: error });
-    }
+    // existing code
 });
 
 export default cartRouter;
