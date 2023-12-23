@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto'; 
 import { userModel } from '../models/user.modeles.js';
 import { sendPasswordResetEmail } from '../services/email.service.js';
-import { createHash } from '../utils/bcrypt.js'; // Asegúrate de tener esta función en tu archivo bcrypt.js
+import { createHash } from '../utils/bcrypt.js'; 
 
 const router = express.Router();
 
@@ -11,7 +11,7 @@ router.post('/register', async (req, res) => {
     try {
         // Crear un nuevo usuario y guardar en la base de datos
         const user = new userModel(req.body);
-        user.password = createHash(user.password); // Asegurarse de que la contraseña esté hasheada
+        user.password = createHash(user.password); 
         await user.save();
         res.status(200).send({ message: 'User registered successfully' });
     } catch (error) {

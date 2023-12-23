@@ -30,6 +30,8 @@ import Message from './models/messages.models.js';
 import logger from './utils/logger.js';
 import { handleErrors } from './utils/errorHandler.js';
 import { createMockProducts } from './utils/mocking.js';
+import swaggerUi from 'swagger-ui-express';
+import swaggerJsDoc from 'swagger-jsdoc';
 
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -42,9 +44,26 @@ const hbs = new ExpressHandlebars({
         allowProtoMethodsByDefault: true,
     }
 });
-const { swaggerUi, swaggerDocs } = require('./config/swagger');
-
-swaggerConfig.setup(app);
+const swaggerOptions = {
+    swaggerDefinition: {
+      openapi: '3.0.0',
+      info: {
+        title: 'API de Node.js',
+        version: '1.0.0',
+        description: 'Documentación de API para el proyecto Node.js',
+      },
+      servers: [
+        {
+          url: 'http://localhost:4000/api',
+          description: 'Servidor de desarrollo',
+        },
+      ],
+    },
+    apis: ['./src/routes/*.js'], 
+  };
+  
+  const swaggerDocs = swaggerJsDoc(swaggerOptions);
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Configuración de middlewares
 app.use(express.json());
@@ -56,7 +75,6 @@ app.use((req, res, next) => {
     console.log(`[${date.toISOString()}] ${req.method} ${req.url}`);
     next();
 });
-
 // Configuración de la sesión
 app.use(session({
     store: MongoStore.create({
