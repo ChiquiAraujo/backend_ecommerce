@@ -1,8 +1,28 @@
 import { Router } from "express";
 import { userModel } from "../models/user.modeles.js";
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
 
 const userRouter = Router();
 
+// Configuración de Multer para cargar documentos
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const dir = `./uploads/${req.params.id}/`;
+    fs.exists(dir, exist => {
+      if (!exist) {
+        return fs.mkdir(dir, { recursive: true }, error => cb(error, dir));
+      }
+      return cb(null, dir);
+    });
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage: storage });
 // Obtener todos los usuarios
 userRouter.get('/', async (req, res) => {
     try {
@@ -58,22 +78,31 @@ userRouter.delete('/:id', async (req, res) => {
     }
 });
 
-// Cambiar el rol de un usuario
-userRouter.post('/:id/premium', async (req, res) => {
+// Cambiar el rol de un usuario a premium y guardar documentos
+userRouter.post('/:id/premium', upload.array('documents'), async (req, res) => {
     const { id } = req.params;
-
     try {
         const user = await userModel.findById(id);
-
         if (!user) {
-            return res.status(404).send({ respuesta: 'Error', mensaje: 'Usuario no encontrado' });
+            return res.status(404).send
+            res.status(404).send({ respuesta: 'Error', mensaje: 'Usuario no encontrado' });
         }
+        // Verificar y guardar los documentos subidos
+        if (req.files && req.files.length > 0) {
+            
+            let documents = req.files.map(file => ({
+                name: file.originalname,
+                reference: file.path 
+            }));
 
-        // Cambiar el rol del usuario
-        user.rol = user.rol === 'premium' ? 'user' : 'premium';
-        await user.save();
+            user.documents = documents;
+            user.rol = 'premium';
 
-        res.status(200).send({ respuesta: 'OK', mensaje: `Rol actualizado a ${user.rol}` });
+            await user.save();
+            res.status(200).send({ respuesta: 'OK', mensaje: `Usuario actualizado a premium con documentos`, documentos: user.documents });
+        } else {
+            res.status(400).send({ respuesta: 'Error', mensaje: 'No se subieron documentos' });
+        }
     } catch (error) {
         res.status(500).send({ respuesta: 'ERROR al actualizar el rol del usuario', mensaje: error });
     }

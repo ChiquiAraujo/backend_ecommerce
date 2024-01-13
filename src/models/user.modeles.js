@@ -38,7 +38,12 @@ const userSchema = new Schema({
     resetPasswordExpires: {
         type: Date,
         default: null
-    }
+    },
+    documents: [{
+        name: String,
+        reference: String,
+    }],
+    last_connection: Date,
 });
 userSchema.plugin(paginate);
 export const userModel = model('User', userSchema);

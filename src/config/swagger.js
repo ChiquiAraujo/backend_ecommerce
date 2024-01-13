@@ -1,10 +1,12 @@
+'use strict';
+
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 
 // Swagger definition
 const swaggerDefinition = {
-  openapi: '3.0.0',
-  info: {
+ openapi: '3.0.0',
+ info: {
     title: 'Node.js API Documentation',
     version: '1.0.0',
     description: 'This is the API documentation for the Node.js project.',
@@ -12,14 +14,14 @@ const swaggerDefinition = {
       name: 'Developer',
       email: 'ck2inf@gmail.com'
     },
-  },
-  servers: [
+ },
+ servers: [
     {
       url: 'http://localhost:4000/api',
       description: 'Development server'
     },
-  ],
-  components: {
+ ],
+ components: {
     schemas: {
       Product: {
         type: 'object',
@@ -65,8 +67,8 @@ const swaggerDefinition = {
         description: 'JWT Authorization header using the Bearer scheme. Example: "Authorization: Bearer {token}"',
       },
     },
-  },
-  tags: [
+ },
+ tags: [
     {
       name: 'product',
       description: 'Operations related to products'
@@ -91,23 +93,25 @@ const swaggerDefinition = {
       name: 'message',
       description: 'Operations related to user messaging'
     },
-  ],
-  
+ ],
+};
+
 // Options for the swagger docs
 const options = {
-  swaggerDefinition,
-  // Paths to files containing OpenAPI definitions
-  apis: ['./src/routes/*.js'],
-},
+ swaggerDefinition,
+ apis: ['./src/routes/*.js'],
+};
+
 // Initialize swagger-jsdoc
-const swaggerSpec = swaggerJsDoc(options),
+const swaggerSpec = swaggerJsDoc(options);
+
 // Swagger setup function
-function setup(app) => {
-  // Middleware to serve swagger docs
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+function setup(app) {
+ // Middleware to serve swagger docs
+ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 }
 
 module.exports = {
-  setup,
-  swaggerSpec,
+ setup,
+ swaggerSpec,
 };
