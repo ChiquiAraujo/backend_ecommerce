@@ -32,7 +32,7 @@ import { handleErrors } from './utils/errorHandler.js';
 import { createMockProducts } from './utils/mocking.js';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsDoc from 'swagger-jsdoc';
-
+import paymentRoutes from './routes/payment.routes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 4000;
@@ -94,6 +94,7 @@ initializePassport();
 app.use(passport.initialize()); 
 app.use(passport.session());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+app.use('/api/payments', paymentRoutes);
 
 // Inicializa el servidor
 const serverExpress = app.listen(PORT, () => {  
